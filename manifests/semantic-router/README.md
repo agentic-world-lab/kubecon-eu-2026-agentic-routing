@@ -106,7 +106,8 @@ kubectl create secret generic hf-token-secret \
 
 2. Install the semantic router
 ```bash
-helm upgrade -i semantic-router oci://ghcr.io/vllm-project/charts/semantic-router:v0.0.0-latest --namespace vllm-semantic-router-system   --create-namespace   -f manifests/semantic-router/values.yaml --set persistence.storageClassName=longhorn   --set image.repository=fjvicens/vllm-sr-extproc --set image.tag=dev --set config.classifier.pii_model.pii_mapping_path="models/pii_classifier_modernbert-base_presidio_token_model/label_mapping.json" --set image.pullPolicy=Always
+helm upgrade -i semantic-router oci://ghcr.io/vllm-project/charts/semantic-router \
+--version v0.0.0-latest --namespace vllm-semantic-router-system   --create-namespace   -f manifests/semantic-router/values.yaml --set persistence.storageClassName=longhorn   --set image.repository=fjvicens/vllm-sr-extproc --set image.tag=dev --set config.classifier.pii_model.pii_mapping_path="models/pii_classifier_modernbert-base_presidio_token_model/label_mapping.json" --set image.pullPolicy=Always
 ```
 
 2.1. For local deployment with OpenAI key
