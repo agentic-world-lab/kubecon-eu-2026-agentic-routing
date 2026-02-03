@@ -16,7 +16,13 @@ import (
 
 func main() {
 	addr := flag.String("addr", "localhost:18080", "gRPC server address")
+	fullFlow := flag.Bool("full-flow", false, "Run full flow test with body")
 	flag.Parse()
+
+	if *fullFlow {
+		testFullFlow()
+		return
+	}
 
 	conn, err := grpc.Dial(*addr, grpc.WithInsecure())
 	if err != nil {

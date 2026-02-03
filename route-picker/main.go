@@ -13,6 +13,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -54,6 +55,14 @@ type Instructions struct {
 	SetTrailers map[string]string `json:"setTrailers"`
 }
 
+// RequestState tracks the state of a single request being processed
+type RequestState struct {
+	headers     *service_ext_proc_v3.HttpHeaders
+	bodyBuffer  []byte
+	forcedRoute string
+	headersSent bool
+}
+
 type server struct{}
 
 type healthServer struct{}
@@ -78,6 +87,8 @@ func (s *healthServer) List(ctx context.Context, in *grpc_health_v1.HealthListRe
 func (s *server) Process(srv service_ext_proc_v3.ExternalProcessor_ProcessServer) error {
 	log.Printf("Process")
 	ctx := srv.Context()
+	// Queue to track state for pipelined requests in FIFO order
+	var pendingRequests []*RequestState
 	for {
 		select {
 		case <-ctx.Done():
@@ -140,40 +151,126 @@ func (s *server) Process(srv service_ext_proc_v3.ExternalProcessor_ProcessServer
 			log.Printf("Got RequestHeaders")
 
 			h := req.Request.(*service_ext_proc_v3.ProcessingRequest_RequestHeaders)
-			headersResp, err := getHeadersResponseFromInstructions(h.RequestHeaders)
-			if err != nil {
-				return err
+			// Create new request state and enqueue it
+			rs := &RequestState{
+				headers:     h.RequestHeaders,
+				bodyBuffer:  nil,
+				forcedRoute: "",
+				headersSent: false,
 			}
-			resp = &service_ext_proc_v3.ProcessingResponse{
-				Response: &service_ext_proc_v3.ProcessingResponse_RequestHeaders{
-					RequestHeaders: headersResp,
-				},
-			}
+			pendingRequests = append(pendingRequests, rs)
+			log.Printf("Enqueued request %d; queue size: %d", len(pendingRequests), len(pendingRequests))
+			// Don't send response yet; wait for body to arrive so we can make a routing decision
+			resp = nil
 
 		case *service_ext_proc_v3.ProcessingRequest_RequestBody:
-			log.Printf("Got RequestBody - forwarding")
+			log.Printf("Got RequestBody - accumulating chunks")
 
 			h := req.Request.(*service_ext_proc_v3.ProcessingRequest_RequestBody)
 
-			resp = &service_ext_proc_v3.ProcessingResponse{
-				Response: &service_ext_proc_v3.ProcessingResponse_RequestBody{
-					RequestBody: &service_ext_proc_v3.BodyResponse{
-						Response: &service_ext_proc_v3.CommonResponse{
-							BodyMutation: &service_ext_proc_v3.BodyMutation{
-								Mutation: &service_ext_proc_v3.BodyMutation_StreamedResponse{
-									StreamedResponse: &service_ext_proc_v3.StreamedBodyResponse{
-										Body:        h.RequestBody.Body,
-										EndOfStream: h.RequestBody.EndOfStream,
+			// Accumulate body chunks to the first (oldest) pending request
+			if len(pendingRequests) == 0 {
+				log.Printf("WARNING: Got RequestBody but no pending request in queue")
+				resp = nil
+			} else {
+				currentReq := pendingRequests[0]
+				currentReq.bodyBuffer = append(currentReq.bodyBuffer, h.RequestBody.Body...)
+
+				// When we reach the end of stream, extract any forced route from the body
+				if h.RequestBody.EndOfStream {
+					currentReq.forcedRoute = extractRouteFromBody(currentReq.bodyBuffer)
+					if currentReq.forcedRoute != "" {
+						log.Printf("Forced route extracted from body: %s", currentReq.forcedRoute)
+					}
+
+					// Send deferred headers response now that body is consumed
+					if currentReq.headers != nil && !currentReq.headersSent {
+						log.Printf("Sending deferred RequestHeaders response with forced route decision")
+						// Build headers response with forced route if available
+						headersResp := &service_ext_proc_v3.HeadersResponse{
+							Response: &service_ext_proc_v3.CommonResponse{},
+						}
+
+						// Add forced route as header if extracted from body
+						if currentReq.forcedRoute != "" {
+							headersResp.Response.HeaderMutation = &service_ext_proc_v3.HeaderMutation{
+								SetHeaders: []*core_v3.HeaderValueOption{
+									{
+										Header: &core_v3.HeaderValue{Key: routingHeaderName, RawValue: []byte(currentReq.forcedRoute)},
 									},
+								},
+							}
+						} else {
+							// No forced route; use policy evaluation
+							headersResp, _ = getHeadersResponseFromInstructions(currentReq.headers)
+						}
+
+						currentReq.headersSent = true
+
+						// Send headers response
+						headersResp2 := &service_ext_proc_v3.ProcessingResponse{
+							Response: &service_ext_proc_v3.ProcessingResponse_RequestHeaders{
+								RequestHeaders: headersResp,
+							},
+						}
+						if err := srv.Send(headersResp2); err != nil {
+							log.Printf("send error for deferred headers %v", err)
+							return err
+						}
+
+						// Dequeue this request
+						pendingRequests = pendingRequests[1:]
+						log.Printf("Dequeued request; queue size now: %d", len(pendingRequests))
+					}
+				}
+
+				// Build response with streamed body
+				bodyResp := &service_ext_proc_v3.BodyResponse{
+					Response: &service_ext_proc_v3.CommonResponse{
+						BodyMutation: &service_ext_proc_v3.BodyMutation{
+							Mutation: &service_ext_proc_v3.BodyMutation_StreamedResponse{
+								StreamedResponse: &service_ext_proc_v3.StreamedBodyResponse{
+									Body:        h.RequestBody.Body,
+									EndOfStream: h.RequestBody.EndOfStream,
 								},
 							},
 						},
 					},
-				},
+				}
+
+				resp = &service_ext_proc_v3.ProcessingResponse{
+					Response: &service_ext_proc_v3.ProcessingResponse_RequestBody{
+						RequestBody: bodyResp,
+					},
+				}
 			}
 		case *service_ext_proc_v3.ProcessingRequest_RequestTrailers:
-			log.Printf("Got RequestTrailers (not currently handled)")
-			resp.Response = &service_ext_proc_v3.ProcessingResponse_RequestTrailers{}
+			log.Printf("Got RequestTrailers")
+			// If headers were deferred and not yet sent (no body case), send them now
+			if len(pendingRequests) > 0 {
+				currentReq := pendingRequests[0]
+				if currentReq.headers != nil && !currentReq.headersSent {
+					log.Printf("No body received; sending deferred RequestHeaders response now")
+					headersResp, _ := getHeadersResponseFromInstructions(currentReq.headers)
+					headersResp2 := &service_ext_proc_v3.ProcessingResponse{
+						Response: &service_ext_proc_v3.ProcessingResponse_RequestHeaders{
+							RequestHeaders: headersResp,
+						},
+					}
+					if err := srv.Send(headersResp2); err != nil {
+						log.Printf("send error for deferred headers %v", err)
+						return err
+					}
+					currentReq.headersSent = true
+
+					// Dequeue this request
+					pendingRequests = pendingRequests[1:]
+					log.Printf("Dequeued request; queue size now: %d", len(pendingRequests))
+				}
+			}
+			resp = &service_ext_proc_v3.ProcessingResponse{
+				Response: &service_ext_proc_v3.ProcessingResponse_RequestTrailers{},
+			}
 
 		case *service_ext_proc_v3.ProcessingRequest_ResponseHeaders:
 			log.Printf("Got ResponseHeaders")
@@ -543,6 +640,19 @@ func watchPolicyFile(path string) {
 			log.Printf("watcher error: %v", err)
 		}
 	}
+}
+
+// extractRouteFromBody inspects the request body for forced routing directives.
+// Returns "cpu" if body contains "force cpu", "gpu" if contains "force gpu", or empty string.
+func extractRouteFromBody(body []byte) string {
+	bodyStr := string(body)
+	if strings.Contains(bodyStr, "force cpu") {
+		return "cpu"
+	}
+	if strings.Contains(bodyStr, "force gpu") {
+		return "gpu"
+	}
+	return ""
 }
 
 // evaluatePolicy runs the prepared query with a simple input constructed from
