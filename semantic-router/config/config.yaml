@@ -1,0 +1,73 @@
+# Model Router Configuration
+# Stripped-down version focused on domain classification + latency + cost scoring
+
+# Embedding Models for domain classification
+embedding_models:
+  qwen3_model_path: "models/mom-embedding-pro"
+  use_cpu: true
+  hnsw_config:
+    model_type: "qwen3"
+    preload_embeddings: true
+    target_dimension: 1024
+    enable_soft_matching: true
+    min_score_threshold: 0.5
+
+# Classifier for domain detection
+classifier:
+  category_model:
+    model_id: "models/mom-domain-classifier"
+    threshold: 0.6
+    use_cpu: true
+    category_mapping_path: "models/mom-domain-classifier/category_mapping.json"
+
+# Domain categories
+categories:
+  - name: finance
+    description: "Financial and investment topics"
+    mmlu_categories: ["economics", "business"]
+  - name: legal
+    description: "Legal questions and law-related topics"
+    mmlu_categories: ["law"]
+  - name: health
+    description: "Health and medical information"
+    mmlu_categories: ["health", "biology"]
+  - name: technology
+    description: "Technology and computer science"
+    mmlu_categories: ["computer_science", "engineering"]
+  - name: science
+    description: "Science topics"
+    mmlu_categories: ["physics", "chemistry", "math"]
+  - name: general
+    description: "General knowledge and miscellaneous"
+    mmlu_categories: ["other", "history", "philosophy", "psychology"]
+
+# Backend models with cost, domains, and latency
+models:
+  gpt-4o:
+    cost: 0.002
+    domains: ["finance", "legal", "health"]
+    average_latency_ms: 120
+  gpt-4o-mini:
+    cost: 0.0008
+    domains: ["general", "technology"]
+    average_latency_ms: 85
+  llama-3.1-70b:
+    cost: 0.0005
+    domains: ["science", "technology"]
+    average_latency_ms: 200
+
+# Scoring weights
+weights:
+  domain: 0.5
+  latency: 0.3
+  cost: 0.2
+
+# Default model when no model matches
+default_model: "gpt-4o-mini"
+
+# Observability
+observability:
+  metrics:
+    enabled: true
+  tracing:
+    enabled: false
