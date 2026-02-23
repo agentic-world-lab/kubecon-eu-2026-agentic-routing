@@ -107,18 +107,25 @@ kubectl create secret generic hf-token-secret \
 2. Install the semantic router
 ```bash
 helm upgrade -i semantic-router oci://ghcr.io/vllm-project/charts/semantic-router \
---version v0.0.0-latest --namespace vllm-semantic-router-system   --create-namespace   -f manifests/semantic-router/values.yaml --set persistence.storageClassName=longhorn   --set image.repository=fjvicens/vllm-sr-extproc --set image.tag=dev --set config.classifier.pii_model.pii_mapping_path="models/pii_classifier_modernbert-base_presidio_token_model/label_mapping.json" --set image.pullPolicy=Always
+--version v0.0.0-latest --namespace vllm-semantic-router-system   --create-namespace   -f manifests/semantic-router/values.yaml --set image.repository=fjvicens/vllm-sr-extproc --set image.tag=dev --set config.classifier.pii_model.pii_mapping_path="models/pii_classifier_modernbert-base_presidio_token_model/label_mapping.json" --set image.pullPolicy=Always
 ```
 
 2.1. For local deployment with OpenAI key
 
 ```bash
-helm upgrade -i semantic-router oci://ghcr.io/vllm-project/charts/semantic-router:v0.0.0-latest --namespace vllm-semantic-router-system   --create-namespace   -f manifests/semantic-router/values_local.yaml --set persistence.storageClassName=longhorn   --set image.repository=fjvicens/vllm-sr-extproc --set image.tag=dev --set config.classifier.pii_model.pii_mapping_path="models/pii_classifier_modernbert-base_presidio_token_model/label_mapping.json" --set image.pullPolicy=Always
+helm upgrade -i semantic-router oci://ghcr.io/vllm-project/charts/semantic-router \
+--version v0.0.0-latest --namespace vllm-semantic-router-system   --create-namespace   -f manifests/semantic-router/values_local.yaml  --set image.repository=antonioberben/semantic-router --set image.tag=latest --set config.classifier.pii_model.pii_mapping_path="models/pii_classifier_modernbert-base_presidio_token_model/label_mapping.json" --set image.pullPolicy=Always
+```
+
+```bash
+export INGRESS_GW_ADDRESS=$(kubectl get svc -n agentgateway-system agentgateway-proxy -o jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
+echo $INGRESS_GW_ADDRESS
 ```
 
 
 ```bash
-curl -i -X POST http://10.95.161.251/v1/chat/completions \
+# This goes to the gpu model, gpt-4.1
+curl -i -X POST http://$INGRESS_GW_ADDRESS/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "MoM",
@@ -129,12 +136,25 @@ curl -i -X POST http://10.95.161.251/v1/chat/completions \
 ```
 
 ```bash
-curl -i -X POST http://10.95.161.250 \
-  -H "Content-Type: application/json" \
+# This goes to the cpu model, gpt-4.1-mini this is also default
+curl -i -X POST http://$INGRESS_GW_ADDRESS/v1/chat/completions \
+  -H "Content-Type: application/json" -H "x-selected-model: gpt-5-mini" \
   -d '{
     "model": "MoM",
     "messages": [
       {"role": "user", "content": "hello!"}
     ]
   }'
+```
+
+```bash
+# Goes to gpt-5-mini
+curl "$INGRESS_GW_ADDRESS/" -H content-type:application/json -H "x-test: test"  -d '{
+   "messages": [
+     {
+       "role": "user",
+       "content": "What is the first law of Spanish constitution?"
+     }
+   ]
+ }'
 ```

@@ -12,6 +12,9 @@ spec:
     phase: PreRouting 
     extProc:
       backendRef:
-        name: ext-proc-grpc
-        namespace: agentgateway-system
-        port: 18080
+        # name: ext-proc-grpc
+        # namespace: agentgateway-system
+        # port: 18080
+        name: semantic-router
+        namespace: vllm-semantic-router-system
+        port: 50051

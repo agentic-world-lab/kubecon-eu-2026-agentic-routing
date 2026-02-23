@@ -1,0 +1,25 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: agent-webhook-bridge
+webhooks:
+  - name: bridge.agentgatewaybackend.vllm.ai
+    admissionReviewVersions: ["v1"]
+    sideEffects: NoneOnDryRun
+    # Always allow — the bridge reacts but never blocks
+    failurePolicy: Ignore
+    timeoutSeconds: 5
+    clientConfig:
+      service:
+        name: agent-webhook-bridge
+        namespace: kagent
+        path: /validate
+        port: 443
+      # caBundle is patched by gen-certs.sh
+      caBundle: ""
+    rules:
+      - apiGroups: ["agentgateway.dev"]
+        apiVersions: ["v1alpha1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["agentgatewaybackends"]
+        scope: Namespaced
