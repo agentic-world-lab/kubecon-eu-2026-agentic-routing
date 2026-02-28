@@ -1,36 +1,13 @@
 apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayBackend
 metadata:
-  name: cpu-models
-  namespace: agentgateway-system
-spec:
-  policies:
-    auth:
-      secretRef:
-        name: openai-secret
-  ai:
-    groups: 
-      - providers: 
-          - name: openai-gpt-4.1
-            openai: 
-              model: gpt-4.1
-            policies:
-              auth:
-                secretRef:
-                  name: openai-secret
----
-apiVersion: agentgateway.dev/v1alpha1
-kind: AgentgatewayBackend
-metadata:
-  name: gpu-models
+  name: gpt-4-1
   namespace: agentgateway-system
 spec:
   ai:
     provider:
       openai:
-        model: gpt-5-mini  # Optional: specify default model
-     # host: api.openai.com  # Optional: custom host if needed
-     # port: 443  # Optional: custom port
+        model: gpt-4.1
   policies:
     auth:
       secretRef:
@@ -39,15 +16,28 @@ spec:
 apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayBackend
 metadata:
-  name: default-models
+  name: gpt-5-mini
   namespace: agentgateway-system
 spec:
   ai:
     provider:
       openai:
-        model: gpt-4.1-mini  # Optional: specify default model
-     # host: api.openai.com  # Optional: custom host if needed
-     # port: 443  # Optional: custom port
+        model: gpt-5-mini
+  policies:
+    auth:
+      secretRef:
+        name: openai-secret
+---
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayBackend
+metadata:
+  name: gpt-4-1-mini
+  namespace: agentgateway-system
+spec:
+  ai:
+    provider:
+      openai:
+        model: gpt-4.1-mini
   policies:
     auth:
       secretRef:

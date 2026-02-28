@@ -1,0 +1,48 @@
+apiVersion: vllm.ai/v1alpha1
+kind: IntelligentRouterConfig
+metadata:
+  name: config-router
+  namespace: intelligent-router-system
+spec:
+  pool:
+    defaultModel: "gpt-4.1"
+    models:
+      - name: "gpt-4.1"
+        initialAverageLatencyMs: 120
+        qualityScores:
+          finance: 0.9
+          health: 0.8
+          legal: 0.7
+          general: 0.5
+        costScore: 0.8
+        endpointType: "public"
+        aiInfrastructureType: "gpu_a100"
+
+      - name: "gpt-4.1-mini"
+        initialAverageLatencyMs: 85
+        qualityScores:
+          technology: 0.9
+          general: 0.8
+          finance: 0.5
+        costScore: 0.3
+        endpointType: "public"
+        aiInfrastructureType: "gpu_a100"
+
+  weights:
+    quality: 0.6
+    latency: 0.2
+    cost: 0.2
+
+  tokenBudget:
+    enabled: true
+    threshold: 500
+    quota: 1000
+    windowSeconds: 60
+
+  mlClassifier:
+    enabled: true
+    modelPath: "/app/models/domain-classifier"
+    mappingPath: "/app/models/domain-classifier/category_mapping.json"
+    numClasses: 3      # 0 = auto-detect from model weights
+    useCPU: true
+    threshold: 0.6

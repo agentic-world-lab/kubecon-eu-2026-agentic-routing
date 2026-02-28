@@ -1,0 +1,33 @@
+# IntelligentPool CR -- defines the model pool, pricing, and routing metadata.
+# Mirrors the vllm.ai/v1alpha1 IntelligentPool CRD structure.
+# Hot-reloaded by the router every 5 seconds (no restart required).
+#
+# In Kubernetes: back this with a ConfigMap and update with:
+#   kubectl apply -f pool.yaml
+kind: IntelligentPool
+metadata:
+  name: model-pool
+  namespace: model-router-system
+spec:
+  defaultModel: "gpt-4o-mini"
+  models:
+    - name: "gpt-4o"
+      pricing:
+        inputTokenPrice: 0.002
+        outputTokenPrice: 0.006
+      domains: ["finance", "legal", "health"]
+      averageLatencyMs: 120
+
+    - name: "gpt-4o-mini"
+      pricing:
+        inputTokenPrice: 0.0008
+        outputTokenPrice: 0.002
+      domains: ["technology", "general"]
+      averageLatencyMs: 85
+
+    - name: "llama-3.1-70b"
+      pricing:
+        inputTokenPrice: 0.0005
+        outputTokenPrice: 0.001
+      domains: ["science", "technology"]
+      averageLatencyMs: 200

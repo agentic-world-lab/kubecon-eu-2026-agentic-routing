@@ -1,9 +1,0 @@
-apiVersion: agentgateway.dev/v1alpha1
-kind: AgentgatewayParameters
-metadata:
-  name: agentgateway-config
-  namespace: agentgateway-system
-spec:
-  logging:
-    level: debug
-    format: json

@@ -1,0 +1,48 @@
+- Dynamic adaptation del sem router. por request calcula la latencia.
+  Se llama latency aware selection y tiene una formula.
+  use percentile based time per output token (TPOT) y el Time to first token (TTFT)
+- 9.7 Latency-Aware Selection
+Latency-Aware. Selects the model with the best observed latency using percentile-based
+Time-per-Output-Token (TPOT) and Time-to-First-Token (TTFT) statistics collected at run-
+time. For each candidate model mk, the selector computes a normalized latency score:
+sk = 1
+|P |
+∑
+p∈P
+percp(mk)
+minj percp(mj ) (33)
+where P ⊆ {TPOT, TTFT} is the set of configured performance metrics and percp(mk) is the
+observed percentile value for model mk on metric p. Selection minimizes this score: m∗ =
+arg mink sk. This enables adaptive routing that responds to real-time backend performance
+degradation without requiring explicit latency thresholds as signal conditions.
+
+Nota: Considerar ventana de muestras.
+
+- Metricas de forma Agentica
+  lo vemos
+- Electricidad
+- Coste por token
+  Nota: La eleccion del model incluye los token restantes con los valores thresholds: 50, 100, 200
+
+- Formula (en la docu vienen los algoritmos de decision)
+  El que no conviene es: Cost-aware selection. Estrategias: Static, Elo, RouterDC, AutoMix, Hybrid algorithm
+comparison
+  Hay que investigar cual es el que nos conviene.
+  score clasification + score coste + score latencia + score threshold -> model1 mdoelo2
+
+- Labels:
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayBackend
+metadata:
+  name: cpu-models
+  namespace: agentgateway-system
+  labels:
+    intelligent-routing/endpoint-type: "" # public / onprem
+    intelligent-routing/ai-infrastructure-type: "" # cpu / gpu_[type]
+
+- El agente necesita skill que calcule los mejores dominois por modelo:
+    domains: ["finance", "legal", "health"] # lanzando el python (a lo mejor necesitamos skill)
+
+- Montar un redis in memory para almacenar la latency
+    
+

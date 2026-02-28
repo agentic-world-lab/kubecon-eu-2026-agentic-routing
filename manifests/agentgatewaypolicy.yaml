@@ -9,12 +9,9 @@ spec:
       kind: Gateway
       name: agentgateway-proxy
   traffic:
-    phase: PreRouting 
+    phase: PreRouting
     extProc:
       backendRef:
-        # name: ext-proc-grpc
-        # namespace: agentgateway-system
-        # port: 18080
-        name: semantic-router
-        namespace: vllm-semantic-router-system
-        port: 50051
+        name: intelligent-router
+        namespace: intelligent-router-system
+        port: 18080

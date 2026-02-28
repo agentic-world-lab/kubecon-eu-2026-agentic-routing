@@ -1,0 +1,63 @@
+apiVersion: kagent.dev/v1alpha2
+kind: Agent
+metadata:
+  name: semantic-router-configurator-agent
+  namespace: kagent
+spec:
+  description: AI agent that generates and validates semantic router configurations
+  type: Declarative
+  
+  # Load the semantic router configurator skill
+  skills:
+    refs:
+      - docker.io/antonioberben/semantic-router-configurator-skill:latest
+  declarative:
+    modelConfig: default-model-config
+    stream: true
+    
+    systemMessage: |
+      You are a helpful AI assistant specialized in configuring vLLM Semantic Routers.
+      
+      You have access to a skill that helps generate and validate semantic router configurations.
+      The skill provides Python scripts for:
+      - Generating YAML configurations from user requirements
+      - Validating existing configurations
+      - Providing pre-configured templates
+      
+      When users ask about semantic routing:
+      1. Understand their requirements (endpoints, plugins, port)
+      2. Use the skill scripts to generate appropriate configurations
+      3. Validate the generated configurations
+      4. Explain the configuration to the user
+      
+      Available plugins:
+      - semantic-cache: Cache similar requests
+      - jailbreak: Block adversarial prompts
+      - pii: Handle personally identifiable information
+      - system_prompt: Inject custom system prompts
+      - header_mutation: Modify HTTP headers
+      - hallucination: Detect hallucinations
+      - router_replay: Record routing decisions
+      
+      Always be helpful, clear, and thorough in your explanations.
+      Format your responses in Markdown.
+    tools:
+    - type: McpServer
+      mcpServer:
+        apiGroup: kagent.dev
+        kind: RemoteMCPServer
+        name: semantic-router-configurator-mcp-server
+        toolNames:
+        - get_config
+
+---
+apiVersion: kagent.dev/v1alpha2
+kind: RemoteMCPServer
+metadata:
+  name: semantic-router-configurator-mcp-server
+  namespace: kagent
+spec:
+  sseReadTimeout: 5m0s
+  timeout: 30s
+  url: http://semantic-router-mcp.vllm-semantic-router-system.svc.cluster.local:8081/mcp
+  description: "Semantic Router Tools Server"

@@ -1,0 +1,78 @@
+# StatefulSet for the intelligent-router ExtProc server.
+#
+# Uses the unified IntelligentRouterConfig CR (--cr flag) mounted from a ConfigMap.
+# Hot-reloaded every 5 seconds on ConfigMap changes.
+#
+# Deploy order:
+#   kubectl apply -f manifests/namespace.yaml
+#   kubectl apply -f manifests/crd-intelligent-router-config.yaml
+#   kubectl apply -f manifests/router-config-configmap.yaml
+#   kubectl apply -f manifests/service.yaml
+#   kubectl apply -f manifests/statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: intelligent-router
+  namespace: intelligent-router-system
+  labels:
+    app.kubernetes.io/name: intelligent-router
+spec:
+  serviceName: intelligent-router-headless
+  replicas: 1
+  selector:
+    matchLabels:
+      app: intelligent-router
+  template:
+    metadata:
+      labels:
+        app: intelligent-router
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9091"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: intelligent-router
+          image: antonioberben/intelligent-router:latest
+          imagePullPolicy: Always
+          command: ["/app/router"]
+          args:
+            - "--grpcport=:18080"
+            - "--metricsport=:9091"
+            - "--cr=/app/config/config.yaml"
+          ports:
+            - name: grpc
+              containerPort: 18080
+              protocol: TCP
+            - name: metrics
+              containerPort: 9091
+              protocol: TCP
+          volumeMounts:
+            - name: router-config
+              mountPath: /app/config
+              readOnly: true
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 10101
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "512Mi"
+          readinessProbe:
+            tcpSocket:
+              port: 18080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 18080
+            initialDelaySeconds: 30
+            periodSeconds: 20
+
+      volumes:
+        - name: router-config
+          configMap:
+            name: intelligent-router-config
