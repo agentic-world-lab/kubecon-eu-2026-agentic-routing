@@ -32,11 +32,16 @@ spec:
           args:
             - "--grpcport=:18080"
             - "--metricsport=:9091"
+            - "--httpport=:8090"
+            - "--agentgateway=http://agentgateway-proxy.agentgateway-system"
             - "--pool=/app/config/pool/pool.yaml"
             - "--route=/app/config/route/route.yaml"
           ports:
             - name: grpc
               containerPort: 18080
+              protocol: TCP
+            - name: http-proxy
+              containerPort: 8090
               protocol: TCP
             - name: metrics
               containerPort: 9091

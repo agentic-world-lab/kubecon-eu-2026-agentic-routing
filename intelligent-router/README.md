@@ -1,6 +1,6 @@
 # intelligent-router — ExtProc Server for Intelligent LLM Routing
 
-A lightweight, pure-Go [AgentGateway ExtProc](https://agentgateway.dev/docs/standalone/main/configuration/traffic-management/extproc/) server that classifies the domain of every LLM request (finance, health, legal, technology, science) and routes it to the best-matching model. AgentGateway sets the `x-vsr-selected-model` header based on the router's decision; the HTTPRoute layer then selects the correct `AgentgatewayBackend`.
+A lightweight, pure-Go [AgentGateway ExtProc](https://agentgateway.dev/docs/standalone/main/configuration/traffic-management/extproc/) server that classifies the domain of every LLM request (finance, health, legal, technology, science) and routes it to the best-matching model. AgentGateway sets the `x-router-selected-model` header based on the router's decision; the HTTPRoute layer then selects the correct `AgentgatewayBackend`.
 
 ---
 
@@ -15,8 +15,8 @@ Client (OpenAI API call)
 │                 │ ◄─────────────────── │                                      │
 └─────────────────┘   routing headers   │  1. Extract API key (Auth header)    │
       │                                  │  2. Classify domain (keywords)       │
-      │  x-vsr-selected-model: gpt-4.1  │  3. Score models (quality/cost/lat.) │
-      ▼                                  │  4. Set x-vsr-selected-model header  │
+      │  x-router-selected-model: gpt-4.1  │  3. Score models (quality/cost/lat.) │
+      ▼                                  │  4. Set x-router-selected-model header  │
 ┌─────────────────┐                      └──────────────────────────────────────┘
 │  HTTPRoute      │
 │  matches header │──► AgentgatewayBackend (gpt-4-1 / gpt-5-mini / gpt-4-1-mini)
@@ -27,9 +27,9 @@ Client (OpenAI API call)
 
 | Header | Value |
 |--------|-------|
-| `x-vsr-selected-model` | Model name chosen by the router (e.g. `gpt-4.1`) |
-| `x-vsr-selected-domain` | Detected domain (`finance`, `technology`, `unknown`, …) |
-| `x-vsr-model-scores` | JSON array of all model scores (for observability) |
+| `x-router-selected-model` | Model name chosen by the router (e.g. `gpt-4.1`) |
+| `x-router-selected-domain` | Detected domain (`finance`, `technology`, `unknown`, …) |
+| `x-router-model-scores` | JSON array of all model scores (for observability) |
 
 ### Routing configuration — `IntelligentRouterConfig` CR
 
@@ -207,7 +207,7 @@ router --cr /app/config/config.yaml --grpcport :18080 --metricsport :9091
 | Field | Description |
 |-------|-------------|
 | `defaultModel` | Fallback model when no scoring match is found |
-| `models[].name` | Model identifier — written to `x-vsr-selected-model` header |
+| `models[].name` | Model identifier — written to `x-router-selected-model` header |
 | `models[].initialAverageLatencyMs` | Seed latency; updated at runtime from observed requests |
 | `models[].qualityScores` | Map of `domain → score [0,1]` (higher = better for that domain) |
 | `models[].costScore` | Normalised cost `[0,1]` — higher = more expensive |

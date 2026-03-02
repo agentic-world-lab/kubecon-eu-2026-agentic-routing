@@ -16,7 +16,7 @@ spec:
         add:
         # Log the Authorization header (shows Bearer token)
         - name: selected_model_header
-          expression: 'request.headers["x-vsr-selected-model"]'
+          expression: 'request.headers["x-router-selected-model"]'
         # Log JWT subject claim
         # - name: jwt_sub
         #   expression: 'default(jwt.sub, "missing")'

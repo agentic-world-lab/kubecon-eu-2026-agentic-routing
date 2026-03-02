@@ -28,9 +28,10 @@ RUN GOOS=$TARGETOS GOARCH=$TARGETARCH CGO_ENABLED=0 \
     go build -ldflags="-w -s" -o _output/router .
 
 # ── Runtime image ─────────────────────────────────────────────────────────────
-FROM alpine:3.17.6
+# scratch avoids any platform-specific base-image pull (binary is fully static).
+FROM scratch
 
-# Copy CA certificates for outbound TLS (metrics, health endpoints).
+# CA certificates for outbound TLS (metrics, health endpoints).
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 WORKDIR /app

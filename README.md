@@ -1,436 +1,308 @@
-# Intelligent Routing for Optimized Inference
+# Lab — Intelligent Agentic Routing with AgentGateway
 
-Lab for KubeCon + CloudNativeCon Europe 2026 Amsterdam.
-
-This lab walks you through deploying an intelligent model routing system using Agent Gateway, a Semantic Router (ExtProc), and kagent. By the end, you will have an AI agent that dynamically configures routing decisions, and a ValidatingWebhook that calls that agent to validate every configuration change before it is admitted into the cluster.
-
-## Architecture
+This lab shows how the intelligent router classifies the domain of every LLM request and automatically selects the right model from the pool. The client sends a plain request with no routing hint; the intelligent router reads the body, detects the domain from keywords, and injects the `x-router-selected-model` header before the request reaches AgentGateway.
 
 ```
-                 ┌──────────────────────────────────────────────────────┐
-                 │               Kubernetes API Server                  │
-                 │                                                      │
-                 │  IntelligentPool CR    IntelligentRoute CR           │
-                 │         │                      │                     │
-                 │         └──────┬───────────────┘                     │
-                 │                │                                     │
-                 │    ValidatingWebhookConfiguration                   │
-                 │                │                                     │
-                 └────────────────┼─────────────────────────────────────┘
-                                  │ POST /validate
-                                  ▼
-                 ┌──────────────────────────────────┐
-                 │  Agent Webhook Bridge             │
-                 │  Translates AdmissionReview       │
-                 │  into a prompt for the agent      │
-                 └───────────────┬──────────────────┘
-                                 │ A2A protocol (JSON-RPC)
-                                 ▼
-                 ┌──────────────────────────────────┐
-                 │  kagent                           │
-                 │  "intelligent-router-             │
-                 │   configurator" agent             │
-                 │  Validates + applies CRs          │
-                 └──────────────────────────────────┘
-
-┌──────────┐    ┌──────────────────┐    ┌──────────────────────────────┐
-│  Client  │───▶│  Agent Gateway   │───▶│  Semantic Router (ExtProc)   │
-│          │    │  (Gateway API)   │    │  Domain classification       │
-│          │    │                  │◀───│  Weighted scoring             │
-│          │    │  Routes by       │    │  (domain + latency + cost)   │
-│          │    │  x-vsr-selected- │    └──────────────────────────────┘
-│          │    │  model header    │
-│          │    └────────┬─────────┘
-│          │◀────────────┘
-└──────────┘
+Client request  (no routing header)
+        │
+        ▼
+Intelligent Router  (HTTP proxy, port 8090)
+        │  reads body → classifies domain → picks model
+        │  injects x-router-selected-model: gpt-4.1
+        ▼
+AgentGateway
+        │  HTTPRoute matches x-router-selected-model header
+        ├─ gpt-4.1      → gpt-4-1      backend  (finance)
+        ├─ gpt-5-mini   → gpt-5-mini   backend  (science)
+        └─ gpt-4.1-mini → gpt-4-1-mini backend  (technology)
+        ▼
+OpenAI API
 ```
+
+The routing decision is proven two ways:
+1. **Response `model` field** — OpenAI echoes back the actual model used, confirming which backend served the request.
+2. **Router logs** — `[proxy] domain=finance selected_model=gpt-4.1` shows the intelligent router classified the prompt and injected the routing header.
+
+> **Building the router image**: see [intelligent-router/README.md](intelligent-router/README.md).
+> The lab uses the pre-built image `antonioberben/intelligent-router:latest`.
+
+---
 
 ## Prerequisites
 
-- Kubernetes cluster (v1.28+)
-- kubectl CLI
-- Helm (v3+)
-- OpenAI API key
-- Gemini API key (for kagent)
+| Tool | Install |
+|------|---------|
+| Docker Desktop (with buildx) | [docs.docker.com](https://docs.docker.com/desktop/) |
+| kubectl ≥ 1.28 | `brew install kubectl` |
+| helm ≥ 3.14 | `brew install helm` |
+| jq | `brew install jq` |
+| OpenAI API key | [platform.openai.com](https://platform.openai.com/api-keys) |
+
+| Existing Kubernetes cluster | Must be running and accessible via kubectl |
+
+```bash
+kubectl version --client && helm version --short && jq --version
+```
 
 ---
 
-## Step 1: Install Agent Gateway
+## Step 1 — Verify cluster access
+
+Ensure your Kubernetes cluster is running and accessible:
 
 ```bash
-export GATEWAY_VERSION="v2.2.0-main"
-export OPENAI_API_KEY="<your_openai_api_key_here>"
+kubectl cluster-info
 ```
 
-Install Gateway API CRDs and Agent Gateway:
+---
+
+## Step 2 — Install AgentGateway
 
 ```bash
+# Gateway API CRDs
 kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/standard-install.yaml
-```
 
-```bash
-helm upgrade -i agentgateway-crds oci://ghcr.io/kgateway-dev/charts/agentgateway-crds \
-  --create-namespace --namespace agentgateway-system \
-  --version ${GATEWAY_VERSION} \
+# AgentGateway CRDs
+helm upgrade -i agentgateway-crds \
+  oci://ghcr.io/kgateway-dev/charts/agentgateway-crds \
+  --create-namespace \
+  --namespace agentgateway-system \
+  --version v2.2.1 \
   --set controller.image.pullPolicy=Always
 
-helm upgrade -i agentgateway oci://ghcr.io/kgateway-dev/charts/agentgateway \
+# AgentGateway control plane
+helm upgrade -i agentgateway \
+  oci://ghcr.io/kgateway-dev/charts/agentgateway \
   --namespace agentgateway-system \
-  --version ${GATEWAY_VERSION} \
-  --set controller.image.pullPolicy=Always \
-  --set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true
+  --version v2.2.1 \
+  --set controller.image.pullPolicy=Always
+
+kubectl rollout status deployment/agentgateway -n agentgateway-system --timeout=120s
 ```
 
-Create the Gateway and OpenAI secret:
+---
+
+## Step 3 — Store the OpenAI API key
 
 ```bash
+export OPENAI_API_KEY=<your-openai-api-key>
+```
+
+```bash
+kubectl create secret generic openai-secret \
+  --from-literal="Authorization=Bearer $OPENAI_API_KEY" \
+  --namespace agentgateway-system
+```
+
+---
+
+## Step 4 — Deploy lab manifests
+
+Apply resources in dependency order:
+
+```bash
+# Intelligent-router namespace, CRD, and workload
+kubectl apply -f manifests/namespace.yaml
+kubectl apply -f manifests/crd-intelligent-router-config.yaml
+kubectl apply -f manifests/intelligent-router-pool-configmap.yaml
+kubectl apply -f manifests/intelligent-router-route-configmap.yaml
+kubectl apply -f manifests/intelligent-router-service.yaml
+kubectl apply -f manifests/intelligent-router-statefulset.yaml
+
+# AgentGateway resources
 kubectl apply -f manifests/gateway.yaml
-```
-
-```bash
-kubectl apply -f- <<EOF
-apiVersion: v1
-kind: Secret
-metadata:
-  name: openai-secret
-  namespace: agentgateway-system
-type: Opaque
-stringData:
-  Authorization: $OPENAI_API_KEY
-EOF
-```
-
-## Step 2: Deploy Agent Gateway Backends
-
-```bash
 kubectl apply -f manifests/agentgatewaybackends.yaml
-kubectl apply -f manifests/httproutes-openai.yaml
-```
-
-## Step 3: Deploy the Semantic Router
-
-```bash
-kubectl create ns vllm-semantic-router-system
-kubectl apply -f semantic-router/manifests/configmap.yaml -n vllm-semantic-router-system
-kubectl apply -f semantic-router/manifests/deployment.yaml -n vllm-semantic-router-system
-kubectl apply -f semantic-router/manifests/service.yaml -n vllm-semantic-router-system
 kubectl apply -f manifests/agentgatewaypolicy.yaml
-```
-
-Verify the router is running:
-
-```bash
-kubectl get pods -n vllm-semantic-router-system
-```
-
-## Step 4: Test the routing
-
-```bash
-export INGRESS_GW_ADDRESS=$(kubectl get svc -n agentgateway-system agentgateway-proxy \
-  -o jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
-echo $INGRESS_GW_ADDRESS
-```
-
-Send a finance query (should route to the powerful model):
-
-```bash
-curl -s "http://$INGRESS_GW_ADDRESS/v1/chat/completions" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "MoM",
-    "messages": [
-      {"role": "user", "content": "What is the current P/E ratio of the S&P 500 and how does it compare to historical averages?"}
-    ]
-  }' | jq '.model'
-```
-
-Send a general query (should route to the cheaper model):
-
-```bash
-curl -s "http://$INGRESS_GW_ADDRESS/v1/chat/completions" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "MoM",
-    "messages": [
-      {"role": "user", "content": "Hello, how are you?"}
-    ]
-  }' | jq '.model'
-```
-
-Check the routing decision headers:
-
-```bash
-curl -si "http://$INGRESS_GW_ADDRESS/v1/chat/completions" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "MoM",
-    "messages": [
-      {"role": "user", "content": "Explain the derivative of x^3"}
-    ]
-  }' 2>&1 | grep -i "x-vsr"
+kubectl apply -f manifests/httproutes.yaml
 ```
 
 ---
 
-## Step 5: Deploy kagent and the intelligent-router-configurator agent
-
-> **TODO**: This section needs implementation.
-
-### 5.1 Install kagent
+## Step 5 — Verify everything is running
 
 ```bash
-export GEMINI_API_KEY="<your_gemini_api_key_here>"
+# Intelligent router
+kubectl rollout status statefulset/intelligent-router \
+  -n intelligent-router-system --timeout=60s
+
+kubectl get pods -n intelligent-router-system
+# NAME                     READY   STATUS    RESTARTS   AGE
+# intelligent-router-0     1/1     Running   0          30s
+
+# AgentGateway proxy
+kubectl rollout status deployment/agentgateway-proxy \
+  -n agentgateway-system --timeout=120s
+
+# Backends (should show Accepted)
+kubectl get agentgatewaybackends -n agentgateway-system
+# NAME
+# gpt-4-1
+# gpt-5-mini
+# gpt-4-1-mini
+
+# HTTPRoute (should show Accepted / Programmed)
+kubectl get httproute -n agentgateway-system
 ```
-
-```bash
-helm upgrade --install kagent-crds oci://ghcr.io/kagent-dev/kagent/helm/kagent-crds \
-    --namespace kagent \
-    --version=0.7.13 \
-    --create-namespace
-```
-
-```bash
-helm upgrade --install kagent oci://ghcr.io/kagent-dev/kagent/helm/kagent \
-    --namespace kagent \
-    --version=0.7.13 \
-    --set providers.default=gemini \
-    --set ui.service.type=LoadBalancer \
-    --set providers.gemini.apiKey=$GEMINI_API_KEY
-```
-
-### 5.2 Install the semantic router CRDs
-
-> **TODO**: Package and install the `IntelligentPool` and `IntelligentRoute` CRDs (`vllm.ai/v1alpha1`).
-
-```bash
-# TODO: kubectl apply -f semantic-router/manifests/crds/
-```
-
-### 5.3 Create the intelligent-router-configurator agent
-
-> **TODO**: Create the kagent Agent CR. The agent should:
->
-> - Use `k8s_apply_manifest` and `k8s_get_resource` tools to read/write `IntelligentPool` and `IntelligentRoute` CRs
-> - Understand the CR schema (see [configuration-by-crs.md](semantic-router/configuration-by-crs.md))
-> - Generate valid CRs from natural language and apply them to the cluster
-
-```yaml
-# TODO: Create this Agent CR
-apiVersion: kagent.dev/v1alpha2
-kind: Agent
-metadata:
-  name: intelligent-router-configurator
-  namespace: kagent
-spec:
-  description: >
-    AI agent that configures the semantic router by creating and updating
-    IntelligentPool and IntelligentRoute custom resources.
-  type: Declarative
-  declarative:
-    modelConfig: default-model-config
-    stream: true
-    systemMessage: |
-      You are an AI agent that configures an intelligent model router.
-      You operate two CRs in the vllm.ai/v1alpha1 API group:
-      1. IntelligentPool - defines available models and pricing
-      2. IntelligentRoute - defines signals, domains, decisions, and plugins
-      Always deploy to namespace: vllm-semantic-router-system
-    tools:
-      - type: McpServer
-        mcpServer:
-          name: kagent-tool-server
-          kind: RemoteMCPServer
-          toolNames:
-            - k8s_apply_manifest
-            - k8s_get_resource
-            - k8s_get_resource_yaml
-            - k8s_list_resources
-```
-
-### 5.4 Test the agent
-
-```bash
-export KAGENT_UI_ADDRESS=$(kubectl get svc -n kagent kagent-ui \
-  -o jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
-open "http://$KAGENT_UI_ADDRESS:8080"
-```
-
-Example prompts:
-- "Route all finance and legal queries to gpt-4.1 with a system prompt"
-- "Add a new model gpt-5-mini with input price 0.001"
-- "Show me the current routing configuration"
 
 ---
 
-## Step 6: Deploy the Agent Webhook Bridge
+## Step 6 — Port-forward the intelligent router
 
-The bridge is a ValidatingWebhook that intercepts `AgentgatewayBackend` CR changes. When a backend has router annotations, the bridge calls the kagent agent to automatically create/update the `IntelligentPool` and `IntelligentRoute` CRs so the semantic router learns about the new model.
-
-```
-kubectl apply AgentgatewayBackend (with router annotations)
-       │
-       ▼
-  ValidatingWebhook ──► Bridge ──► kagent A2A ──► Agent LLM
-       │                                              │
-       │                                     k8s_apply_manifest
-       │                                     (creates/updates
-       │                                      IntelligentPool +
-       │                                      IntelligentRoute)
-       ▼
-  always admitted
-```
-
-The bridge **always admits** the `AgentgatewayBackend` (it never blocks). It fires the agent call asynchronously in the background. The agent then uses `k8s_apply_manifest` to configure the router.
-
-### Annotation convention
-
-Add these annotations to an `AgentgatewayBackend` to opt-in to automatic router configuration:
-
-| Annotation | Required | Description | Example |
-|------------|----------|-------------|---------|
-| `router.vllm.ai/enabled` | Yes (label or annotation) | Opt-in flag | `"true"` |
-| `router.vllm.ai/domains` | Yes | Comma-separated domains this model is good at | `"math,physics"` |
-| `router.vllm.ai/cost` | No | Cost per token | `"0.002"` |
-| `router.vllm.ai/latency-ms` | No | Average latency in ms | `"120"` |
-
-### 6.1 Build and push the bridge image
+Keep this terminal open for all test steps:
 
 ```bash
-cd agent-webhook-bridge
-docker buildx build --push --platform linux/arm64 \
-  -t antonioberben/agent-webhook-bridge:latest .
+kubectl port-forward statefulset/intelligent-router \
+  -n intelligent-router-system 8080:8090
 ```
 
-### 6.2 Deploy the bridge
-
-```bash
-kubectl apply -f agent-webhook-bridge/manifests/webhook.yaml
-kubectl apply -f agent-webhook-bridge/manifests/deployment.yaml
-
-# Generate TLS certs, create Secret, patch webhook caBundle
-agent-webhook-bridge/manifests/gen-certs.sh kagent
-```
-
-Verify:
-
-```bash
-kubectl get pods -n kagent -l app=agent-webhook-bridge
-```
-
-### 6.3 Test: add a new backend with router annotations
-
-Apply an `AgentgatewayBackend` with annotations telling the router this model is good at math and physics:
-
-```bash
-kubectl apply -f- <<EOF
-apiVersion: agentgateway.dev/v1alpha1
-kind: AgentgatewayBackend
-metadata:
-  name: gpt-4.1
-  namespace: agentgateway-system
-  labels:
-    router.vllm.ai/enabled: "true"
-  annotations:
-    router.vllm.ai/domains: "math,physics,engineering"
-    router.vllm.ai/cost: "0.002"
-    router.vllm.ai/latency-ms: "120"
-spec:
-  ai:
-    groups:
-      - providers:
-          - name: openai-gpt-4.1
-            openai:
-              model: gpt-4.1
-            policies:
-              auth:
-                secretRef:
-                  name: openai-secret
-EOF
-```
-
-The bridge intercepts this, calls the agent, and the agent creates/updates the `IntelligentPool` and `IntelligentRoute` CRs so the router knows to send math/physics/engineering queries to `gpt-4.1`.
-
-Check the bridge logs:
-
-```bash
-kubectl logs -n kagent -l app=agent-webhook-bridge
-```
-
-Verify the router CRs were created:
-
-```bash
-kubectl get intelligentpools -n vllm-semantic-router-system
-kubectl get intelligentroutes -n vllm-semantic-router-system
-```
-
-### 6.4 Test: add a second backend for general queries
-
-```bash
-kubectl apply -f- <<EOF
-apiVersion: agentgateway.dev/v1alpha1
-kind: AgentgatewayBackend
-metadata:
-  name: gpt-4.1-mini
-  namespace: agentgateway-system
-  labels:
-    router.vllm.ai/enabled: "true"
-  annotations:
-    router.vllm.ai/domains: "general,business,history"
-    router.vllm.ai/cost: "0.0004"
-    router.vllm.ai/latency-ms: "85"
-spec:
-  ai:
-    groups:
-      - providers:
-          - name: openai-gpt-4.1-mini
-            openai:
-              model: gpt-4.1-mini
-            policies:
-              auth:
-                secretRef:
-                  name: openai-secret
-EOF
-```
-
-The agent will add `gpt-4.1-mini` to the pool and create decisions routing general/business/history queries to it, without removing the existing math/physics/engineering decisions for `gpt-4.1`.
-
-### 6.5 Test: backend without router annotations (ignored)
-
-```bash
-kubectl apply -f- <<EOF
-apiVersion: agentgateway.dev/v1alpha1
-kind: AgentgatewayBackend
-metadata:
-  name: internal-backend
-  namespace: agentgateway-system
-spec:
-  ai:
-    groups:
-      - providers:
-          - name: some-provider
-            openai:
-              model: some-model
-EOF
-```
-
-The bridge sees no `router.vllm.ai/enabled: "true"` label, so it skips this backend entirely. No agent call is made.
+The intelligent router (port 8090) is now the entry point. It classifies each request, injects the routing header, and forwards to AgentGateway automatically.
 
 ---
 
-## Summary
+## Step 7 — Scenario 1: Finance query → gpt-4.1
 
-| Step | Component | Purpose |
-|------|-----------|---------|
-| 1 | Agent Gateway | Gateway API implementation with ExtProc support |
-| 2 | AgentgatewayBackend | LLM provider backends (OpenAI models) |
-| 3 | Semantic Router | ExtProc server for domain-based model routing |
-| 4 | Test routing | Verify domain classification and model selection |
-| 5 | kagent + agent | AI agent that configures routing via CRs |
-| 6 | Agent Webhook Bridge | ValidatingWebhook on AgentgatewayBackend that triggers the agent to auto-configure the router |
+A prompt about **portfolio diversification, equity bonds, and dividend funds** belongs to the `finance` domain. The intelligent router scores `gpt-4.1` highest for finance: it is the only model whose `domains` list includes `finance`, and domain matching carries the highest scoring weight (0.6). The router injects the routing header automatically — no client hint needed.
 
-## References
+```bash
+curl -s http://localhost:8080/v1/chat/completions \
+  -H 'Content-Type: application/json' \
+  -d '{"model":"gpt-4.1-mini","messages":[{"role":"user","content":"What is the best strategy for portfolio diversification using dividend stocks, equity funds and bond investments?"}]}' \
+  | jq '{selected_model: .model, content: .choices[0].message.content[:100]}'
+```
 
-- [Agent Gateway docs](https://agentgateway.dev/docs/kubernetes/main/)
-- [Semantic Router CRD examples](semantic-router/configuration-by-crs.md)
-- [kagent docs](https://kagent.dev/docs)
-- [kagent A2A protocol](https://kagent.dev/docs/kagent/examples/a2a-agents)
+Expected output — the `gpt-4.1` backend served the request:
+
+```json
+{
+  "selected_model": "gpt-4.1-2025-04-14",
+  "content": "..."
+}
+```
+
+**Verify the router classified the domain and injected the header:**
+
+```bash
+kubectl logs -n intelligent-router-system -l app=intelligent-router --tail=5
+# [proxy] domain=finance selected_model=gpt-4.1 path=/v1/chat/completions
+```
+
+---
+
+## Step 8 — Scenario 2: Technology query → gpt-4.1-mini
+
+A prompt about **Kubernetes, Docker, and programming algorithms** belongs to the `technology` domain. Only `gpt-4.1-mini` is configured for the technology domain (domains: `["technology", "general"]`). `gpt-4.1` covers finance/health/legal and `gpt-5-mini` covers science — neither matches technology — so the intelligent router selects `gpt-4.1-mini` as the unambiguous winner, regardless of what model name the client body specified.
+
+```bash
+curl -s http://localhost:8080/v1/chat/completions \
+  -H 'Content-Type: application/json' \
+  -d '{"model":"gpt-4.1","messages":[{"role":"user","content":"Explain how Kubernetes StatefulSets differ from Deployments when running a database in Docker containers, focusing on the algorithm for pod scheduling."}]}' \
+  | jq '{selected_model: .model, content: .choices[0].message.content[:100]}'
+```
+
+Expected output — `gpt-4.1-mini` backend served the request even though the client body said `gpt-4.1`:
+
+```json
+{
+  "selected_model": "gpt-4.1-mini-2025-04-14",
+  "content": "..."
+}
+```
+
+**Verify the router classification:**
+
+```bash
+kubectl logs -n intelligent-router-system -l app=intelligent-router --tail=5
+# [proxy] domain=technology selected_model=gpt-4.1-mini path=/v1/chat/completions
+```
+
+---
+
+## Step 9 — Scenario 3: Science query → gpt-5-mini
+
+A prompt about **quantum physics, chemistry, and laboratory experiments** belongs to the `science` domain. Only `gpt-5-mini` is configured for science in the pool, making it the unambiguous winner.
+
+```bash
+curl -s http://localhost:8080/v1/chat/completions \
+  -H 'Content-Type: application/json' \
+  -d '{"model":"gpt-4.1-mini","messages":[{"role":"user","content":"Explain the quantum chemistry behind molecular orbital theory and how laboratory experiments with hydrogen can validate the hypothesis."}]}' \
+  | jq '{selected_model: .model, content: .choices[0].message.content[:100]}'
+```
+
+Expected output — `gpt-5-mini` backend served the request:
+
+```json
+{
+  "selected_model": "gpt-5-mini-2025-08-07",
+  "content": "..."
+}
+```
+
+**Verify the router classification:**
+
+```bash
+kubectl logs -n intelligent-router-system -l app=intelligent-router --tail=5
+# [proxy] domain=science selected_model=gpt-5-mini path=/v1/chat/completions
+```
+
+---
+
+## Step 10 — Observe router decisions in logs
+
+In a second terminal, watch the router live:
+
+```bash
+kubectl logs -n intelligent-router-system \
+  -l app=intelligent-router -f --tail=30
+```
+
+The log line `[proxy] domain=... selected_model=...` appears for every request, showing which domain was detected and which model was selected by the intelligent router.
+
+Each request produces lines like:
+
+```
+[proxy] domain=finance selected_model=gpt-4.1 path=/v1/chat/completions
+```
+
+Check Prometheus metrics (in another terminal):
+
+```bash
+kubectl port-forward -n intelligent-router-system \
+  svc/intelligent-router 9091:9091 &
+
+curl -s http://localhost:9091/metrics | grep intelligent_router_decisions_total
+# intelligent_router_decisions_total{domain="finance",selected_model="gpt-4.1"} 1
+# intelligent_router_decisions_total{domain="technology",selected_model="gpt-4.1-mini"} 1
+# intelligent_router_decisions_total{domain="science",selected_model="gpt-5-mini"} 1
+```
+
+---
+
+## Routing summary
+
+| Prompt keywords | Domain detected | Model selected | Backend |
+|-----------------|----------------|----------------|---------|
+| portfolio, dividend, equity, bond | finance | gpt-4.1 | gpt-4-1 |
+| kubernetes, docker, programming, algorithm | technology | gpt-4.1-mini | gpt-4-1-mini |
+| quantum, physics, chemistry, laboratory | science | gpt-5-mini | gpt-5-mini |
+
+---
+
+## Cleanup
+
+```bash
+# Remove lab manifests
+kubectl delete -f manifests/httproutes.yaml
+kubectl delete -f manifests/agentgatewaypolicy.yaml
+kubectl delete -f manifests/agentgatewaybackends.yaml
+kubectl delete -f manifests/gateway.yaml
+kubectl delete -f manifests/intelligent-router-statefulset.yaml
+kubectl delete -f manifests/intelligent-router-service.yaml
+kubectl delete -f manifests/intelligent-router-route-configmap.yaml
+kubectl delete -f manifests/intelligent-router-pool-configmap.yaml
+kubectl delete -f manifests/crd-intelligent-router-config.yaml
+kubectl delete -f manifests/namespace.yaml
+kubectl delete secret openai-secret -n agentgateway-system
+
+# Uninstall AgentGateway
+helm uninstall agentgateway agentgateway-crds -n agentgateway-system
+```

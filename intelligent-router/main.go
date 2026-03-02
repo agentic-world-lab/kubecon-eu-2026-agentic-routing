@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"flag"
@@ -9,6 +10,8 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"os"
 	"os/signal"
 	"strings"
@@ -29,16 +32,18 @@ import (
 // ── Output header names ───────────────────────────────────────────────────────
 
 const (
-	headerSelectedModel  = "x-vsr-selected-model"
-	headerSelectedDomain = "x-vsr-selected-domain"
-	headerModelScores    = "x-vsr-model-scores"
+	headerSelectedModel  = "x-router-selected-model"
+	headerSelectedDomain = "x-router-selected-domain"
+	headerModelScores    = "x-router-model-scores"
 )
 
 // ── CLI flags ─────────────────────────────────────────────────────────────────
 
 var (
-	grpcPort    = flag.String("grpcport", ":18080", "gRPC listen address")
-	metricsPort = flag.String("metricsport", ":9091", "Prometheus metrics listen address")
+	grpcPort       = flag.String("grpcport", ":18080", "gRPC listen address")
+	metricsPort    = flag.String("metricsport", ":9091", "Prometheus metrics listen address")
+	httpPort       = flag.String("httpport", "", "HTTP proxy listen address (e.g. :8090); empty disables the proxy")
+	agentGatewayURL = flag.String("agentgateway", "http://agentgateway-proxy.agentgateway-system", "AgentGateway URL the HTTP proxy forwards to")
 
 	// Unified CR config (new format: IntelligentRouterConfig).
 	crPath = flag.String("cr", "", "path to IntelligentRouterConfig CR YAML (new unified format)")
@@ -226,7 +231,8 @@ func (s *server) Process(srv service_ext_proc_v3.ExternalProcessor_ProcessServer
 			st.apiKey = extractAPIKey(v.RequestHeaders)
 			st.requestStartTime = time.Now()
 			log.Printf("[ext_proc] RequestHeaders  api_key=%s", maskKey(st.apiKey))
-			// Pass through immediately; body arrives next in streaming chunks.
+			// Pass through. The HTTP proxy (port 8090) already set x-router-selected-model
+			// before the request reached AgentGateway, so routing is already determined.
 			resp = &service_ext_proc_v3.ProcessingResponse{
 				Response: &service_ext_proc_v3.ProcessingResponse_RequestHeaders{
 					RequestHeaders: &service_ext_proc_v3.HeadersResponse{
@@ -271,7 +277,7 @@ func (s *server) Process(srv service_ext_proc_v3.ExternalProcessor_ProcessServer
 
 				st.scoresJSON, _ = json.Marshal(scores)
 
-				// Inject x-vsr routing headers into the REQUEST so AgentGateway
+				// Inject x-router routing headers into the REQUEST so AgentGateway
 				// can use them to decide the upstream route.
 				if st.selectedModel != "" {
 					reqSetHeaders = []*core_v3.HeaderValueOption{
@@ -282,15 +288,14 @@ func (s *server) Process(srv service_ext_proc_v3.ExternalProcessor_ProcessServer
 				}
 			}
 
+			// Echo body via StreamedResponse (required by AgentGateway's full_duplex_streaming mode).
+			// Header mutation is added for observability only; routing is handled by the HTTP proxy.
 			resp = &service_ext_proc_v3.ProcessingResponse{
 				Response: &service_ext_proc_v3.ProcessingResponse_RequestBody{
 					RequestBody: &service_ext_proc_v3.BodyResponse{
 						Response: &service_ext_proc_v3.CommonResponse{
 							Status:         service_ext_proc_v3.CommonResponse_CONTINUE,
 							HeaderMutation: &service_ext_proc_v3.HeaderMutation{SetHeaders: reqSetHeaders},
-							// Echo body bytes via StreamedResponse so agentgateway (streaming mode)
-							// can forward them downstream. Mutation_Body triggers the warning
-							// "Body() not valid for streaming mode" and silently drops the body.
 							BodyMutation: &service_ext_proc_v3.BodyMutation{
 								Mutation: &service_ext_proc_v3.BodyMutation_StreamedResponse{
 									StreamedResponse: &service_ext_proc_v3.StreamedBodyResponse{
@@ -315,7 +320,7 @@ func (s *server) Process(srv service_ext_proc_v3.ExternalProcessor_ProcessServer
 				modelLatencyGauge.WithLabelValues(st.selectedModel).Set(elapsedMs)
 			}
 
-			// Inject x-vsr routing headers into the response so the client can
+			// Inject x-router routing headers into the response so the client can
 			// observe the classification result.
 			var setHeaders []*core_v3.HeaderValueOption
 			if st.selectedModel != "" {
@@ -591,6 +596,78 @@ func (h *healthServer) Watch(_ *grpc_health_v1.HealthCheckRequest, srv grpc_heal
 	return status.Error(codes.Unimplemented, "Watch not implemented")
 }
 
+
+// ── HTTP Proxy ────────────────────────────────────────────────────────────────
+
+// startHTTPProxy starts an HTTP reverse proxy that:
+//  1. Reads the full request body.
+//  2. Classifies the domain using the same routing logic as the ExtProc server.
+//  3. Injects x-router-selected-model (and companion headers) into the upstream
+//     request before forwarding it to AgentGateway.
+//
+// This ensures the routing header is present at the time AgentGateway evaluates
+// HTTPRoute rules, so intelligent routing to the correct backend works without
+// the client having to set any header.
+func (s *server) startHTTPProxy(listenAddr, gatewayURL string) {
+	target, err := url.Parse(gatewayURL)
+	if err != nil {
+		log.Fatalf("[proxy] invalid agentgateway URL %q: %v", gatewayURL, err)
+	}
+
+	rp := &httputil.ReverseProxy{
+		Director: func(req *http.Request) {
+			req.URL.Scheme = target.Scheme
+			req.URL.Host = target.Host
+			req.Host = target.Host
+		},
+		ErrorHandler: func(w http.ResponseWriter, r *http.Request, err error) {
+			log.Printf("[proxy] upstream error: %v", err)
+			http.Error(w, "upstream error: "+err.Error(), http.StatusBadGateway)
+		},
+	}
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, "cannot read body", http.StatusInternalServerError)
+			return
+		}
+		r.Body = io.NopCloser(bytes.NewReader(body))
+
+		state := s.current.Load()
+		var pressure float64
+		if state.config.TokenBudget.Enabled {
+			apiKey := r.Header.Get("Authorization")
+			pressure = s.tokenStore.GetPressure(apiKey, state.config.TokenBudget)
+		}
+		latencyMs := s.latencyTracker.Snapshot()
+		selectedModel, domain, scores := route(body, state, latencyMs, pressure)
+		log.Printf("[proxy] domain=%s selected_model=%s path=%s", domain, selectedModel, r.URL.Path)
+
+		routingDecisionsTotal.WithLabelValues(selectedModel, domain).Inc()
+		for _, sc := range scores {
+			modelScoreGauge.WithLabelValues(sc.ModelName).Set(sc.FinalScore)
+		}
+
+		r.Header.Set(headerSelectedModel, selectedModel)
+		r.Header.Set(headerSelectedDomain, domain)
+		if scoresJSON, err := json.Marshal(scores); err == nil {
+			r.Header.Set(headerModelScores, string(scoresJSON))
+		}
+
+		// Content-Length must match the original body since we do not modify it.
+		r.ContentLength = int64(len(body))
+
+		rp.ServeHTTP(w, r)
+	})
+
+	log.Printf("[proxy] HTTP proxy on %s → %s", listenAddr, gatewayURL)
+	if err := http.ListenAndServe(listenAddr, mux); err != nil {
+		log.Fatalf("[proxy] HTTP proxy error: %v", err)
+	}
+}
+
 // ── Entry point ───────────────────────────────────────────────────────────────
 
 func main() {
@@ -625,6 +702,10 @@ func main() {
 			log.Printf("metrics server error: %v", err)
 		}
 	}()
+
+	if *httpPort != "" {
+		go srv.startHTTPProxy(*httpPort, *agentGatewayURL)
+	}
 
 	lis, err := net.Listen("tcp", *grpcPort)
 	if err != nil {
