@@ -1,0 +1,67 @@
+Develop an MCP that takes the pricing from OpenRouter API and filter the best coincidence model to get the pricing of prompt and completion tokens.
+
+It should have a tool to get the pricing of a model of a given model name.
+
+As example, if I ask for the pricing of "gpt-5.2", it should return the pricing of "openai/gpt-5.2" if it exists. This is an example of the response from the API:
+```json
+{
+    "data": [
+        {
+            "id": "openai/gpt-5.2",
+            "canonical_slug": "openai/gpt-5.2-20251211",
+            "hugging_face_id": "",
+            "name": "OpenAI: GPT-5.2",
+            "created": 1765389775,
+            "description": "GPT-5.2 is the latest frontier-grade model in the GPT-5 series, offering stronger agentic and long context perfomance compared to GPT-5.1. It uses adaptive reasoning to allocate computation dynamically, responding quickly to simple queries while spending more depth on complex tasks.\n\nBuilt for broad task coverage, GPT-5.2 delivers consistent gains across math, coding, sciende, and tool calling workloads, with more coherent long-form answers and improved tool-use reliability.",
+            "context_length": 400000,
+            "architecture": {
+                "modality": "text+image+file->text",
+                "input_modalities": [
+                    "file",
+                    "image",
+                    "text"
+                ],
+                "output_modalities": [
+                    "text"
+                ],
+                "tokenizer": "GPT",
+                "instruct_type": null
+            },
+            "pricing": {
+                "prompt": "0.00000175",
+                "completion": "0.000014",
+                "web_search": "0.01",
+                "input_cache_read": "0.000000175"
+            },
+            "top_provider": {
+                "context_length": 400000,
+                "max_completion_tokens": 128000,
+                "is_moderated": true
+            },
+            "per_request_limits": null,
+            "supported_parameters": [
+                "include_reasoning",
+                "max_tokens",
+                "reasoning",
+                "response_format",
+                "seed",
+                "structured_outputs",
+                "tool_choice",
+                "tools"
+            ],
+            "default_parameters": {
+                "temperature": null,
+                "top_p": null,
+                "frequency_penalty": null
+            },
+            "expiration_date": null
+        }
+    ]
+}
+```
+Steps:
+1. Get the list of models from OpenRouter API.
+2. Filter the models that have the same name as the input model name.
+3. Return the pricing (prompt and completion tokens) of the best coincidence model in the format '{"pricing": [{"prompt": "", "completion": ""}]}'
+
+

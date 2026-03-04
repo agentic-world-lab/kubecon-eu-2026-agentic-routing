@@ -1,0 +1,12 @@
+apiVersion: kagent.dev/v1alpha2
+kind: ModelConfig
+metadata:
+  name: gpt-oss-120b
+  namespace: kagent
+spec:
+  apiKeySecret: kagent-openai
+  apiKeySecretKey: OPENAI_API_KEY
+  model: gpt-oss-120b
+  provider: OpenAI
+  openAI:
+    baseUrl: "http://10.95.161.240:8000/v1"

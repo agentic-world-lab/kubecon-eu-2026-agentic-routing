@@ -212,8 +212,6 @@ persistence:
 
 # Application configuration
 config:
-  gateway_type: agentgateway
-
   model_config:
     "gpt-3.5-turbo":
       allow_by_default: true

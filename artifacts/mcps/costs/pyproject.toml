@@ -1,0 +1,20 @@
+[project]
+name = "electricity-price-mcp"
+version = "0.1.0"
+description = "MCP server to get electricity prices in Spain"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp>=1.0.0",
+    "fastmcp>=0.4.1",
+    "requests>=2.31.0",
+    "pytz>=2024.1",
+    "pytest>=8.0.0",
+]
+
+[project.scripts]
+electricity-price = "electricity_price_mcp.server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

@@ -1,0 +1,10 @@
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayParameters
+metadata:
+  name: langfuse
+  namespace: agentgateway-system
+spec:
+  rawConfig:
+  tracing:
+    otlpEndpoint: http://otel-collector-opentelemetry-collector.otel.svc.cluster.local:4317
+    randomSampling: true

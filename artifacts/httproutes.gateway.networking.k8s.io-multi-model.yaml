@@ -1,0 +1,96 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"gateway.networking.k8s.io/v1","kind":"HTTPRoute","metadata":{"annotations":{},"name":"multi-model","namespace":"agentgateway-system"},"spec":{"parentRefs":[{"name":"agentgateway-proxy","namespace":"agentgateway-system"}],"rules":[{"backendRefs":[{"group":"agentgateway.dev","kind":"AgentgatewayBackend","name":"gpt-4.1","namespace":"agentgateway-system"}],"matches":[{"headers":[{"name":"x-vsr-selected-model","type":"Exact","value":"gpt-4.1"}]}]},{"backendRefs":[{"group":"agentgateway.dev","kind":"AgentgatewayBackend","name":"gpt-oss-120b","namespace":"agentgateway-system"}],"matches":[{"headers":[{"name":"x-vsr-selected-model","type":"Exact","value":"gpt-oss-120b"}]}]},{"backendRefs":[{"group":"agentgateway.dev","kind":"AgentgatewayBackend","name":"gpt-3.5-turbo","namespace":"agentgateway-system"}],"matches":[{"headers":[{"name":"x-vsr-selected-model","type":"Exact","value":"gpt-3.5-turbo"}]}]},{"backendRefs":[{"group":"agentgateway.dev","kind":"AgentgatewayBackend","name":"llama-3.1-8b-instruct","namespace":"agentgateway-system"}],"matches":[{"headers":[{"name":"x-vsr-selected-model","type":"Exact","value":"llama-3.1-8b-instruct"}]}]}]}}
+  creationTimestamp: "2026-01-31T13:48:59Z"
+  generation: 9
+  name: multi-model
+  namespace: agentgateway-system
+  resourceVersion: "2042823"
+  uid: 7f557073-c4f6-40f1-9ba7-cf8e7df28113
+spec:
+  parentRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: agentgateway-proxy
+    namespace: agentgateway-system
+  rules:
+  - backendRefs:
+    - group: agentgateway.dev
+      kind: AgentgatewayBackend
+      name: gpt-4.1
+      namespace: agentgateway-system
+      weight: 1
+    matches:
+    - headers:
+      - name: x-vsr-selected-model
+        type: Exact
+        value: gpt-4.1
+      path:
+        type: PathPrefix
+        value: /
+  - backendRefs:
+    - group: agentgateway.dev
+      kind: AgentgatewayBackend
+      name: gpt-oss-120b
+      namespace: agentgateway-system
+      weight: 1
+    matches:
+    - headers:
+      - name: x-vsr-selected-model
+        type: Exact
+        value: gpt-oss-120b
+      path:
+        type: PathPrefix
+        value: /
+  - backendRefs:
+    - group: agentgateway.dev
+      kind: AgentgatewayBackend
+      name: gpt-3.5-turbo
+      namespace: agentgateway-system
+      weight: 1
+    matches:
+    - headers:
+      - name: x-vsr-selected-model
+        type: Exact
+        value: gpt-3.5-turbo
+      path:
+        type: PathPrefix
+        value: /
+  - backendRefs:
+    - group: agentgateway.dev
+      kind: AgentgatewayBackend
+      name: llama-3.1-8b-instruct
+      namespace: agentgateway-system
+      weight: 1
+    matches:
+    - headers:
+      - name: x-vsr-selected-model
+        type: Exact
+        value: llama-3.1-8b-instruct
+      path:
+        type: PathPrefix
+        value: /
+status:
+  parents:
+  - conditions:
+    - lastTransitionTime: "2026-02-09T07:02:30Z"
+      message: ""
+      observedGeneration: 9
+      reason: Accepted
+      status: "True"
+      type: Accepted
+    - lastTransitionTime: "2026-02-09T07:02:30Z"
+      message: ""
+      observedGeneration: 9
+      reason: ResolvedRefs
+      status: "True"
+      type: ResolvedRefs
+    controllerName: agentgateway.dev/agentgateway
+    parentRef:
+      group: gateway.networking.k8s.io
+      kind: Gateway
+      name: agentgateway-proxy
+      namespace: agentgateway-system

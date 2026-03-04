@@ -1,0 +1,19 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: agentgateway-healthz
+  namespace: agentgateway-system
+spec:
+  infrastructure:
+    parametersRef:
+      name: agentgateway-config
+      group: agentgateway.dev
+      kind: AgentgatewayParameters
+  gatewayClassName: agentgateway
+  listeners:
+  - protocol: HTTP
+    port: 8080
+    name: http
+    allowedRoutes:
+      namespaces:
+        from: All

@@ -1,0 +1,32 @@
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: langfuse
+  namespace: otel
+spec:
+  config:
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+    processors:
+      memory_limiter:
+        check_interval: 1s
+        limit_percentage: 75
+        spike_limit_percentage: 15
+
+    exporters:
+      debug: {}
+      otlphttp:
+        # endpoint: http://langfuse-web.langfuse.svc.cluster.local:3000
+        endpoint: http://10.95.161.249:31498
+        headers:
+          # Basic <base64-encoded-public-key:secret-key>
+          Authorization: "Basic cGstbGYtYTE2YjM0ODMtYTdhZi00MTRkLWE4Y2QtZTk5M2EwNTZlMzg4OnNrLWxmLTZmNWY5NjBhLWQxMzctNGQ3OS1hZTgxLWQ5MmI4YjYzOWQzZA=="
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [memory_limiter]
+          exporters: [otlphttp]
