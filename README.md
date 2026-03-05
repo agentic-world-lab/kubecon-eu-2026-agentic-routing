@@ -112,6 +112,8 @@ kubectl apply -f manifests/llmbackend/gpt-3.5-turbo-public.yaml
 kubectl apply -f manifests/llmbackend/gpt-oss-120b-local.yaml
 ```
 
+watch bash -c 'oc logs -n default -l app.kubernetes.io/component=evaluator && oc get llmbackends.edgecloudlabs.edgecloudlabs.com -n default'
+
 
 ```bash
 export INGRESS_GW_ADDRESS=$(kubectl get svc -n agentgateway-system agentgateway-proxy -o jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
@@ -121,7 +123,7 @@ echo $INGRESS_GW_ADDRESS
 Test model gpt-3.5-turbo (General knowledge):
 
 ```bash
-curl -si -X POST $INGRESS_GW_ADDRESS//v1/chat/completions   -d '{
+curl -si -X POST $INGRESS_GW_ADDRESS/v1/chat/completions   -d '{
     "model": "MoM", 
     "messages": [
      { "role": "user", 
@@ -130,11 +132,36 @@ curl -si -X POST $INGRESS_GW_ADDRESS//v1/chat/completions   -d '{
     ]
   }'
 ```
+Test model gpt-oss-120b-local (computer science domain):
+
+```bash
+curl -si -X POST $INGRESS_GW_ADDRESS/v1/chat/completions   -d '{
+    "model": "MoM", 
+    "messages": [
+     { "role": "user", 
+       "content": "Which language is commonly used for web page structure?\n\nA. Python\nB. HTML\nC. C++\nD. Java"
+     }
+    ]
+  }'
+```
+
+
+Test model gpt-oss-120b-local (physics domain):
+```bash
+curl -si -X POST $INGRESS_GW_ADDRESS/v1/chat/completions   -d '{
+    "model": "MoM", 
+    "messages": [
+     { "role": "user", 
+       "content": "Calculate the force needed to accelerate a 10kg mass at 5m/s^2"
+     }
+    ]
+  }'
+```
 
 Test model gpt-4.1 (Math domain):
 
 ```bash
-curl -si -X POST $INGRESS_GW_ADDRESS/v1/chat/completions   -d '{
+curl -si -X POST $INGRESS_GW_ADDRESS/v1/chat/completions -H "Application/json"  -d '{
     "model": "MoM", 
     "messages": [
      { "role": "user", 

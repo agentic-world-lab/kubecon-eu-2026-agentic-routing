@@ -1,0 +1,26 @@
+[
+  {
+    "model": "qwen2.5:3b",
+    "results": {
+      "avgResponseTime": 0.6834,
+      "categoryAccuracy": {
+        "biology": 0.6,
+        "business": 0.4,
+        "law": 0.5,
+        "psychology": 0.8,
+        "health": 0.9,
+        "math": 0.7,
+        "physics": 0.6,
+        "chemistry": 0.5,
+        "history": 0.5,
+        "other": 0.5,
+        "economics": 0.5,
+        "computer_science": 0.5,
+        "philosophy": 0.5,
+        "engineering": 0.5
+      },
+      "overallAccuracy": 0.4143,
+      "tokPerSecond": 20.59
+    }
+  }
+]

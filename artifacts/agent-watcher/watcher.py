@@ -253,6 +253,13 @@ def watch_evaluation_events():
                 except Exception as exc:
                     log.error("Failed to fetch full results for %s: %s", model_resource_name, exc)
 
+        except client.exceptions.ApiException as exc:
+            if exc.status == 410:
+                log.warning("Event stream expired (410). Re-acquiring bookmark.")
+                rv = _get_current_resource_version(v1.list_namespaced_event, namespace=WATCH_NAMESPACE)
+            else:
+                log.warning("Event stream API error: %s. Reconnecting...", exc)
+                time.sleep(STREAM_RECONNECT_BACKOFF_SECONDS)
         except Exception as exc:
             log.warning("Event stream interrupted: %s. Reconnecting...", exc)
             time.sleep(STREAM_RECONNECT_BACKOFF_SECONDS)
@@ -287,6 +294,13 @@ def watch_llmbackend_deletions():
                     log.info("Resource deleted | model=%s", backend_name)
                     call_kagent(backend_name, {"action": "delete"})
                     
+        except client.exceptions.ApiException as exc:
+            if exc.status == 410:
+                log.warning("CRD watch stream expired (410). Re-acquiring bookmark.")
+                rv = _get_current_resource_version(custom_v1.list_namespaced_custom_object, group=CRD_GROUP, version=CRD_VERSION, namespace=WATCH_NAMESPACE, plural=CRD_PLURAL)
+            else:
+                log.warning("CRD watch stream API error: %s. Reconnecting...", exc)
+                time.sleep(STREAM_RECONNECT_BACKOFF_SECONDS)
         except Exception as exc:
             log.warning("CRD watch stream interrupted: %s. Reconnecting...", exc)
             time.sleep(STREAM_RECONNECT_BACKOFF_SECONDS)

@@ -6,7 +6,7 @@ metadata:
 spec:
   deployment: local
   model: gpt-oss-120b
-  endpoint: http://10.95.161.240:8000/v1
+  endpoint: http://10.95.161.240.nip.io:8000/v1
   #apiKeySecretRef:
   #  name: model-api-key
   triggerEvaluation: true
