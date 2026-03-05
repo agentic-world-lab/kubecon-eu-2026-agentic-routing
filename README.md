@@ -95,12 +95,30 @@ kubectl create secret generic openai-secret \
 
 ---
 
+## Step 3b — Store the HuggingFace token
+
+The intelligent router downloads a BERT classification model from HuggingFace at first startup. A free HuggingFace account with an access token is required.
+
+```bash
+export HF_TOKEN=<your-huggingface-token>
+```
+
+```bash
+kubectl create namespace intelligent-router-system 2>/dev/null || true
+
+kubectl create secret generic huggingface-api-key \
+  --from-literal="HF_TOKEN=$HF_TOKEN" \
+  --namespace intelligent-router-system
+```
+
+---
+
 ## Step 4 — Deploy lab manifests
 
 Apply resources in dependency order:
 
 ```bash
-# Intelligent-router namespace, CRD, RBAC, CR config, and workload
+# Intelligent-router CRD, RBAC, CR config, and workload
 kubectl apply -f manifests/namespace.yaml
 kubectl apply -f manifests/crd-intelligent-router-config.yaml
 kubectl apply -f intelligent-router/manifests/rbac.yaml
@@ -240,7 +258,7 @@ Expected output — `gpt-5-mini` backend served the request:
 
 ```bash
 kubectl logs -n intelligent-router-system -l app=intelligent-router --tail=5
-# [proxy] domain=science selected_model=gpt-5-mini path=/v1/chat/completions
+# [ext_proc] domain=science selected_model=gpt-5-mini
 ```
 
 ---
@@ -254,12 +272,12 @@ kubectl logs -n intelligent-router-system \
   -l app=intelligent-router -f --tail=30
 ```
 
-The log line `[proxy] domain=... selected_model=...` appears for every request, showing which domain was detected and which model was selected by the intelligent router.
+The log line `[ext_proc] domain=... selected_model=...` appears for every request, showing which domain was detected and which model was selected by the intelligent router.
 
 Each request produces lines like:
 
 ```
-[proxy] domain=finance selected_model=gpt-4.1 path=/v1/chat/completions
+[ext_proc] domain=finance selected_model=gpt-4.1
 ```
 
 Check Prometheus metrics (in another terminal):
@@ -294,10 +312,10 @@ kubectl delete -f manifests/httproutes.yaml
 kubectl delete -f manifests/agentgatewaypolicy.yaml
 kubectl delete -f manifests/agentgatewaybackends.yaml
 kubectl delete -f manifests/gateway.yaml
-kubectl delete -f manifests/intelligent-router-statefulset.yaml
+kubectl delete -f intelligent-router/manifests/statefulset.yaml
 kubectl delete -f manifests/intelligent-router-service.yaml
-kubectl delete -f manifests/intelligent-router-route-configmap.yaml
-kubectl delete -f manifests/intelligent-router-pool-configmap.yaml
+kubectl delete -f manifests/intelligent-router-config-cr.yaml
+kubectl delete -f intelligent-router/manifests/rbac.yaml
 kubectl delete -f manifests/crd-intelligent-router-config.yaml
 kubectl delete -f manifests/namespace.yaml
 kubectl delete secret openai-secret -n agentgateway-system
