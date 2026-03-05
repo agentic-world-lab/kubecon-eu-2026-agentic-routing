@@ -1,27 +1,26 @@
 # Lab — Intelligent Agentic Routing with AgentGateway
 
-This lab shows how the intelligent router classifies the domain of every LLM request and automatically selects the right model from the pool. The client sends a plain request with no routing hint; the intelligent router reads the body, detects the domain from keywords, and injects the `x-router-selected-model` header before the request reaches AgentGateway.
+This lab shows how the intelligent router classifies the domain of every LLM request and automatically selects the right model from the pool. The client sends a plain request with no routing hint; AgentGateway calls the intelligent router via ExtProc (pre-routing), which reads the body, detects the domain, and injects the `x-router-selected-model` header. AgentGateway then selects the HTTPRoute based on that header.
 
 ```
 Client request  (no routing header)
         │
         ▼
-Intelligent Router  (HTTP proxy, port 8090)
-        │  reads body → classifies domain → picks model
-        │  injects x-router-selected-model: gpt-4.1
-        ▼
-AgentGateway
-        │  HTTPRoute matches x-router-selected-model header
-        ├─ gpt-4.1      → gpt-4-1      backend  (finance)
+AgentGateway  (port 80)
+        │  gateway-level ExtProc (PreRouting) ──► Intelligent Router (:18080)
+        │                                           reads body → classifies domain
+        │                                           injects x-router-selected-model: gpt-4.1
+        │  select_best_route() → HTTPRoute matches header
+        ├─ gpt-4.1      → gpt-4-1      backend  (finance / health / legal)
         ├─ gpt-5-mini   → gpt-5-mini   backend  (science)
-        └─ gpt-4.1-mini → gpt-4-1-mini backend  (technology)
+        └─ gpt-4.1-mini → gpt-4-1-mini backend  (technology / general)
         ▼
 OpenAI API
 ```
 
 The routing decision is proven two ways:
 1. **Response `model` field** — OpenAI echoes back the actual model used, confirming which backend served the request.
-2. **Router logs** — `[proxy] domain=finance selected_model=gpt-4.1` shows the intelligent router classified the prompt and injected the routing header.
+2. **Router logs** — `[ext_proc] domain=finance selected_model=gpt-4.1` shows the intelligent router classified the prompt and injected the routing header.
 
 > **Building the router image**: see [intelligent-router/README.md](intelligent-router/README.md).
 > The lab uses the pre-built image `antonioberben/intelligent-router:latest`.
@@ -101,13 +100,13 @@ kubectl create secret generic openai-secret \
 Apply resources in dependency order:
 
 ```bash
-# Intelligent-router namespace, CRD, and workload
+# Intelligent-router namespace, CRD, RBAC, CR config, and workload
 kubectl apply -f manifests/namespace.yaml
 kubectl apply -f manifests/crd-intelligent-router-config.yaml
-kubectl apply -f manifests/intelligent-router-pool-configmap.yaml
-kubectl apply -f manifests/intelligent-router-route-configmap.yaml
+kubectl apply -f intelligent-router/manifests/rbac.yaml
+kubectl apply -f manifests/intelligent-router-config-cr.yaml
 kubectl apply -f manifests/intelligent-router-service.yaml
-kubectl apply -f manifests/intelligent-router-statefulset.yaml
+kubectl apply -f intelligent-router/manifests/statefulset.yaml
 
 # AgentGateway resources
 kubectl apply -f manifests/gateway.yaml
@@ -146,16 +145,16 @@ kubectl get httproute -n agentgateway-system
 
 ---
 
-## Step 6 — Port-forward the intelligent router
+## Step 6 — Port-forward AgentGateway
 
 Keep this terminal open for all test steps:
 
 ```bash
-kubectl port-forward statefulset/intelligent-router \
-  -n intelligent-router-system 8080:8090
+kubectl port-forward deployment/agentgateway-proxy \
+  -n agentgateway-system 8080:80
 ```
 
-The intelligent router (port 8090) is now the entry point. It classifies each request, injects the routing header, and forwards to AgentGateway automatically.
+Requests flow: `curl → AgentGateway (:80) → gateway-level ExtProc → intelligent-router classifies body → injects x-router-selected-model → AgentGateway selects HTTPRoute → correct AgentgatewayBackend → OpenAI`.
 
 ---
 
@@ -167,7 +166,7 @@ A prompt about **portfolio diversification, equity bonds, and dividend funds** b
 curl -s http://localhost:8080/v1/chat/completions \
   -H 'Content-Type: application/json' \
   -d '{"model":"gpt-4.1-mini","messages":[{"role":"user","content":"What is the best strategy for portfolio diversification using dividend stocks, equity funds and bond investments?"}]}' \
-  | jq '{selected_model: .model, content: .choices[0].message.content[:100]}'
+  | jq
 ```
 
 Expected output — the `gpt-4.1` backend served the request:
@@ -183,7 +182,7 @@ Expected output — the `gpt-4.1` backend served the request:
 
 ```bash
 kubectl logs -n intelligent-router-system -l app=intelligent-router --tail=5
-# [proxy] domain=finance selected_model=gpt-4.1 path=/v1/chat/completions
+# [ext_proc] domain=finance selected_model=gpt-4.1
 ```
 
 ---
@@ -212,7 +211,7 @@ Expected output — `gpt-4.1-mini` backend served the request even though the cl
 
 ```bash
 kubectl logs -n intelligent-router-system -l app=intelligent-router --tail=5
-# [proxy] domain=technology selected_model=gpt-4.1-mini path=/v1/chat/completions
+# [ext_proc] domain=technology selected_model=gpt-4.1-mini
 ```
 
 ---

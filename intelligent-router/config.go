@@ -83,6 +83,15 @@ type IntelligentRouterConfigSpec struct {
 	Weights      CRScoringWeights `yaml:"weights"`
 	TokenBudget  CRTokenBudget    `yaml:"tokenBudget"`
 	MLClassifier CRMLClassifier   `yaml:"mlClassifier"`
+	KeywordRules []CRKeywordRule  `yaml:"keywordRules"`
+}
+
+// CRKeywordRule is a keyword-based domain classification rule in the CR (camelCase tags).
+type CRKeywordRule struct {
+	Name          string   `yaml:"name"`
+	Keywords      []string `yaml:"keywords"`
+	Operator      string   `yaml:"operator"`
+	CaseSensitive bool     `yaml:"caseSensitive"`
 }
 
 // CRMLClassifier configures the BERT-based ML domain classifier in the CR.
@@ -315,9 +324,20 @@ func convertCRToConfig(cr *IntelligentRouterConfig) *RouterConfig {
 	if defaultModel == "" {
 		defaultModel = "default"
 	}
+	var keywordRules []KeywordRule
+	for _, k := range cr.Spec.KeywordRules {
+		keywordRules = append(keywordRules, KeywordRule{
+			Name:          k.Name,
+			Keywords:      k.Keywords,
+			Operator:      k.Operator,
+			CaseSensitive: k.CaseSensitive,
+		})
+	}
+
 	return &RouterConfig{
 		Models:       models,
 		DefaultModel: defaultModel,
+		KeywordRules: keywordRules,
 		Weights: ScoringWeights{
 			Quality: cr.Spec.Weights.Quality,
 			Latency: cr.Spec.Weights.Latency,

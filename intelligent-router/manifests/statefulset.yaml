@@ -1,14 +1,16 @@
 # StatefulSet for the intelligent-router ExtProc server.
 #
-# Uses the unified IntelligentRouterConfig CR (--cr flag) mounted from a ConfigMap.
-# Hot-reloaded every 5 seconds on ConfigMap changes.
+# Config is loaded live from the IntelligentRouterConfig CR via the --cr-watch flag.
+# No ConfigMap volume mount needed — the router calls the Kubernetes API directly.
 #
-# Deploy order:
-#   kubectl apply -f manifests/namespace.yaml
-#   kubectl apply -f manifests/crd-intelligent-router-config.yaml
-#   kubectl apply -f manifests/router-config-configmap.yaml
-#   kubectl apply -f manifests/service.yaml
-#   kubectl apply -f manifests/statefulset.yaml
+# The mmBERT-32K intent classifier model is downloaded at first startup by the
+# init container and stored on a PersistentVolumeClaim so subsequent restarts
+# skip the download (~2 GB for base + LoRA adapter combined).
+#
+# Requires:
+#   - Secret "huggingface-api-key" with key "HF_TOKEN" in the namespace
+#   - RBAC from manifests/rbac.yaml (ServiceAccount + ClusterRole)
+#   - IntelligentRouterConfig CR from manifests/intelligent-router-config-cr.yaml
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -22,6 +24,14 @@ spec:
   selector:
     matchLabels:
       app: intelligent-router
+  volumeClaimTemplates:
+    - metadata:
+        name: model-storage
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 5Gi
   template:
     metadata:
       labels:
@@ -31,6 +41,89 @@ spec:
         prometheus.io/port: "9091"
         prometheus.io/path: "/metrics"
     spec:
+      serviceAccountName: intelligent-router
+      initContainers:
+        - name: download-bert-model
+          image: curlimages/curl:latest
+          env:
+            - name: HF_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: huggingface-api-key
+                  key: HF_TOKEN
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              MODEL_DIR="/app/models/domain-classifier"
+              BASE_DIR="/app/models/mmbert-32k-yarn"
+              MARKER="${MODEL_DIR}/.download-complete"
+
+              if [ -f "$MARKER" ]; then
+                echo "Model already downloaded, skipping."
+                ls -lh "$MODEL_DIR"
+                exit 0
+              fi
+
+              mkdir -p "$MODEL_DIR" "$BASE_DIR"
+              AUTH="-H 'Authorization: Bearer ${HF_TOKEN}'"
+              HF="https://huggingface.co"
+
+              echo "==> Downloading mmBERT-32K base model (~1.9 GB)..."
+              BASE_URL="${HF}/llm-semantic-router/mmbert-32k-yarn/resolve/main"
+              for f in config.json tokenizer.json tokenizer_config.json special_tokens_map.json model.safetensors; do
+                echo "  Downloading base/${f}..."
+                curl -fSL -H "Authorization: Bearer ${HF_TOKEN}" \
+                  -o "${BASE_DIR}/${f}" "${BASE_URL}/${f}"
+              done
+
+              echo "==> Downloading mmBERT-32K intent classifier LoRA adapter..."
+              LORA_URL="${HF}/llm-semantic-router/mmbert32k-intent-classifier-lora/resolve/main"
+              for f in adapter_config.json adapter_model.safetensors tokenizer.json tokenizer_config.json special_tokens_map.json; do
+                echo "  Downloading lora/${f}..."
+                curl -fSL -H "Authorization: Bearer ${HF_TOKEN}" \
+                  -o "${MODEL_DIR}/${f}" "${LORA_URL}/${f}"
+              done
+
+              echo "==> Patching adapter_config.json to use local base model path..."
+              # Replace the HuggingFace hub base model reference with the local path
+              # so the Rust candle code finds it without internet access at runtime.
+              sed -i "s|llm-semantic-router/mmbert-32k-yarn|${BASE_DIR}|g" \
+                "${MODEL_DIR}/adapter_config.json"
+
+              echo "==> Creating custom category_mapping.json (14 MMLU-Pro classes → 5 router domains)..."
+              cat > "${MODEL_DIR}/category_mapping.json" << 'EOF'
+              {
+                "idx_to_category": {
+                  "0": "science",
+                  "1": "finance",
+                  "2": "science",
+                  "3": "technology",
+                  "4": "finance",
+                  "5": "technology",
+                  "6": "health",
+                  "7": "legal",
+                  "8": "legal",
+                  "9": "science",
+                  "10": "general",
+                  "11": "general",
+                  "12": "science",
+                  "13": "health"
+                }
+              }
+              EOF
+
+              touch "$MARKER"
+              echo "==> All model files downloaded."
+              echo "Base model:"
+              ls -lh "$BASE_DIR"
+              echo "LoRA adapter:"
+              ls -lh "$MODEL_DIR"
+          volumeMounts:
+            - name: model-storage
+              mountPath: /app/models
+
       containers:
         - name: intelligent-router
           image: antonioberben/intelligent-router:latest
@@ -39,7 +132,7 @@ spec:
           args:
             - "--grpcport=:18080"
             - "--metricsport=:9091"
-            - "--cr=/app/config/config.yaml"
+            - "--cr-watch"
           ports:
             - name: grpc
               containerPort: 18080
@@ -48,19 +141,18 @@ spec:
               containerPort: 9091
               protocol: TCP
           volumeMounts:
-            - name: router-config
-              mountPath: /app/config
-              readOnly: true
+            - name: model-storage
+              mountPath: /app/models
           securityContext:
             runAsNonRoot: true
             runAsUser: 10101
           resources:
             requests:
               cpu: "200m"
-              memory: "256Mi"
+              memory: "512Mi"
             limits:
               cpu: "1000m"
-              memory: "512Mi"
+              memory: "2Gi"
           readinessProbe:
             tcpSocket:
               port: 18080
@@ -71,8 +163,3 @@ spec:
               port: 18080
             initialDelaySeconds: 30
             periodSeconds: 20
-
-      volumes:
-        - name: router-config
-          configMap:
-            name: intelligent-router-config

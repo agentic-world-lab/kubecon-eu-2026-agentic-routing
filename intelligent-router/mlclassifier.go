@@ -33,6 +33,11 @@ type MLClassifier struct {
 
 // NewMLClassifier initialises the BERT domain classifier.
 //
+// Init order (first success wins):
+//  1. Standard Candle BERT sequence classifier (BertForSequenceClassification)
+//  2. ModernBERT sequence classifier
+//  3. mmBERT-32K intent classifier with LoRA adapter (llm-semantic-router/mmbert32k-intent-classifier-lora)
+//
 //   - modelPath   local filesystem path to the SafeTensors model directory
 //   - mappingPath local path to category_mapping.json
 //   - numClasses  number of output classes the model was trained with (0 = auto)
@@ -44,14 +49,21 @@ func NewMLClassifier(modelPath, mappingPath string, numClasses int, useCPU bool,
 		return nil, fmt.Errorf("load category mapping: %w", err)
 	}
 
-	// Try standard Candle BERT classifier first; fall through to ModernBERT.
+	// 1. Try standard Candle BERT classifier.
 	ok := candle.InitCandleBertClassifier(modelPath, numClasses, useCPU)
 	if !ok {
-		log.Printf("[ml] InitCandleBertClassifier failed, trying ModernBERT fallback")
+		log.Printf("[ml] InitCandleBertClassifier failed, trying ModernBERT")
+		// 2. Try ModernBERT classifier.
 		if err := candle.InitModernBertClassifier(modelPath, useCPU); err != nil {
-			return nil, fmt.Errorf("failed to initialise ML classifier (BERT and ModernBERT both failed): %w", err)
+			log.Printf("[ml] InitModernBertClassifier failed (%v), trying mmBERT-32K intent classifier", err)
+			// 3. Try mmBERT-32K LoRA intent classifier (llm-semantic-router/mmbert32k-intent-classifier-lora).
+			if err2 := candle.InitMmBert32KIntentClassifier(modelPath, useCPU); err2 != nil {
+				return nil, fmt.Errorf("all classifiers failed — BERT: (init failed), ModernBERT: %v, MmBert32K: %v", err, err2)
+			}
+			log.Printf("[ml] mmBERT-32K intent classifier initialised from %s", modelPath)
+		} else {
+			log.Printf("[ml] ModernBERT classifier initialised from %s", modelPath)
 		}
-		log.Printf("[ml] ModernBERT classifier initialised from %s", modelPath)
 	} else {
 		log.Printf("[ml] BERT classifier initialised from %s (%d classes)", modelPath, numClasses)
 	}
@@ -62,6 +74,7 @@ func NewMLClassifier(modelPath, mappingPath string, numClasses int, useCPU bool,
 // Classify runs the BERT classifier on text and returns (domainName, confidence).
 // Returns ("", 0) when the confidence is below the configured threshold or
 // when the returned class index has no entry in the category mapping.
+// Tries all three backends in order; only the initialized one will succeed.
 func (m *MLClassifier) Classify(text string) (string, float64) {
 	if m == nil || text == "" {
 		return "", 0
@@ -69,11 +82,13 @@ func (m *MLClassifier) Classify(text string) (string, float64) {
 
 	result, err := candle.ClassifyCandleBertText(text)
 	if err != nil {
-		// ModernBERT fallback
 		result, err = candle.ClassifyModernBertText(text)
 		if err != nil {
-			log.Printf("[ml] classification error: %v", err)
-			return "", 0
+			result, err = candle.ClassifyMmBert32KIntent(text)
+			if err != nil {
+				log.Printf("[ml] classification error: %v", err)
+				return "", 0
+			}
 		}
 	}
 

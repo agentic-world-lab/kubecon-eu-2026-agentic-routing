@@ -1,0 +1,9 @@
+/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/deps/serial_test-4ecd0fc5f01ac683.d: /Users/antonio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.3.1/src/lib.rs /Users/antonio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.3.1/src/code_lock.rs /Users/antonio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.3.1/src/parallel_code_lock.rs /Users/antonio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.3.1/src/rwlock.rs /Users/antonio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.3.1/src/serial_code_lock.rs
+
+/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/deps/libserial_test-4ecd0fc5f01ac683.rmeta: /Users/antonio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.3.1/src/lib.rs /Users/antonio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.3.1/src/code_lock.rs /Users/antonio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.3.1/src/parallel_code_lock.rs /Users/antonio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.3.1/src/rwlock.rs /Users/antonio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.3.1/src/serial_code_lock.rs
+
+/Users/antonio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.3.1/src/lib.rs:
+/Users/antonio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.3.1/src/code_lock.rs:
+/Users/antonio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.3.1/src/parallel_code_lock.rs:
+/Users/antonio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.3.1/src/rwlock.rs:
+/Users/antonio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.3.1/src/serial_code_lock.rs:

@@ -20,6 +20,7 @@ import (
 	"time"
 
 	core_v3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
+	http_ext_proc_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_proc/v3"
 	service_ext_proc_v3 "github.com/envoyproxy/go-control-plane/envoy/service/ext_proc/v3"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -54,6 +55,9 @@ var (
 
 	// Legacy combined config (backward compatible).
 	configPath = flag.String("config", "config.yaml", "path to legacy combined router config YAML")
+
+	// Kubernetes CR watcher mode: auto-discovers any IntelligentRouterConfig in the pod's namespace.
+	crWatch = flag.Bool("cr-watch", false, "enable IntelligentRouterConfig CR watcher (auto-discovers namespace from pod service account)")
 )
 
 // ── Prometheus metrics ────────────────────────────────────────────────────────
@@ -198,6 +202,12 @@ type streamState struct {
 	selectedModel string
 	domain        string
 	scoresJSON    []byte
+
+	// Deferred header response pattern for AgentGateway:
+	// AgentGateway does route selection as soon as it receives the RequestHeaders
+	// response. We hold back the header response until the body is fully received
+	// and classified, then send it with the routing header before the body response.
+	deferredHeaderResp *service_ext_proc_v3.ProcessingResponse
 }
 
 // Process is the main gRPC streaming handler called by Envoy for every request.
@@ -231,76 +241,95 @@ func (s *server) Process(srv service_ext_proc_v3.ExternalProcessor_ProcessServer
 			st.apiKey = extractAPIKey(v.RequestHeaders)
 			st.requestStartTime = time.Now()
 			log.Printf("[ext_proc] RequestHeaders  api_key=%s", maskKey(st.apiKey))
-			// Pass through. The HTTP proxy (port 8090) already set x-router-selected-model
-			// before the request reached AgentGateway, so routing is already determined.
-			resp = &service_ext_proc_v3.ProcessingResponse{
+
+			// Deferred header response pattern: do NOT send the header response
+			// now. AgentGateway performs route selection as soon as it receives
+			// the RequestHeaders response. By withholding it we force the gateway
+			// to wait. Once the full request body is received and classified, we
+			// send this response (with the routing header injected) followed by
+			// the body response.
+			st.deferredHeaderResp = &service_ext_proc_v3.ProcessingResponse{
 				Response: &service_ext_proc_v3.ProcessingResponse_RequestHeaders{
 					RequestHeaders: &service_ext_proc_v3.HeadersResponse{
-						Response: &service_ext_proc_v3.CommonResponse{},
+						Response: &service_ext_proc_v3.CommonResponse{
+							Status: service_ext_proc_v3.CommonResponse_CONTINUE,
+						},
 					},
 				},
 			}
+			continue // do not send anything yet
 
 		// ── Request body ──────────────────────────────────────────────────
 		case *service_ext_proc_v3.ProcessingRequest_RequestBody:
 			h := v.RequestBody
 			st.bodyBuffer = append(st.bodyBuffer, h.Body...)
 
-			var reqSetHeaders []*core_v3.HeaderValueOption
+			if !h.EndOfStream {
+				// Intermediate chunk — accumulate silently, send nothing.
+				continue
+			}
 
-			if h.EndOfStream {
-				// Full body received. Classify and store result in stream state.
-				state := s.current.Load()
-				var pressure float64
-				if state.config.TokenBudget.Enabled {
-					pressure = s.tokenStore.GetPressure(st.apiKey, state.config.TokenBudget)
-				}
-				log.Printf("[ext_proc] api_key=%s budget_pressure=%.3f", maskKey(st.apiKey), pressure)
-				budgetPressureGauge.WithLabelValues(maskKey(st.apiKey)).Set(pressure)
+			// ── EndOfStream: full body received — classify and flush ──
 
-				latencyMs := s.latencyTracker.Snapshot()
-				var scores []ModelScore
-				st.selectedModel, st.domain, scores = route(st.bodyBuffer, state, latencyMs, pressure)
-				log.Printf("[ext_proc] domain=%s selected_model=%s", st.domain, st.selectedModel)
+			state := s.current.Load()
+			var pressure float64
+			if state.config.TokenBudget.Enabled {
+				pressure = s.tokenStore.GetPressure(st.apiKey, state.config.TokenBudget)
+			}
+			log.Printf("[ext_proc] api_key=%s budget_pressure=%.3f", maskKey(st.apiKey), pressure)
+			budgetPressureGauge.WithLabelValues(maskKey(st.apiKey)).Set(pressure)
 
-				routingDecisionsTotal.WithLabelValues(st.selectedModel, st.domain).Inc()
-				for _, sc := range scores {
-					modelScoreGauge.WithLabelValues(sc.ModelName).Set(sc.FinalScore)
-				}
+			latencyMs := s.latencyTracker.Snapshot()
+			var scores []ModelScore
+			st.selectedModel, st.domain, scores = route(st.bodyBuffer, state, latencyMs, pressure)
+			log.Printf("[ext_proc] domain=%s selected_model=%s", st.domain, st.selectedModel)
 
-				estimatedInput := estimateRequestTokens(st.bodyBuffer)
-				s.tokenStore.AddTokens(st.apiKey, estimatedInput)
-				newTotal := s.tokenStore.GetTotal(st.apiKey)
-				tokensUsedGauge.WithLabelValues(maskKey(st.apiKey)).Set(float64(newTotal))
-				log.Printf("[ext_proc] api_key=%s estimated_input=%d new_total=%d",
-					maskKey(st.apiKey), estimatedInput, newTotal)
+			routingDecisionsTotal.WithLabelValues(st.selectedModel, st.domain).Inc()
+			for _, sc := range scores {
+				modelScoreGauge.WithLabelValues(sc.ModelName).Set(sc.FinalScore)
+			}
 
-				st.scoresJSON, _ = json.Marshal(scores)
+			estimatedInput := estimateRequestTokens(st.bodyBuffer)
+			s.tokenStore.AddTokens(st.apiKey, estimatedInput)
+			newTotal := s.tokenStore.GetTotal(st.apiKey)
+			tokensUsedGauge.WithLabelValues(maskKey(st.apiKey)).Set(float64(newTotal))
+			log.Printf("[ext_proc] api_key=%s estimated_input=%d new_total=%d",
+				maskKey(st.apiKey), estimatedInput, newTotal)
 
-				// Inject x-router routing headers into the REQUEST so AgentGateway
-				// can use them to decide the upstream route.
-				if st.selectedModel != "" {
-					reqSetHeaders = []*core_v3.HeaderValueOption{
-						{Header: &core_v3.HeaderValue{Key: headerSelectedModel, RawValue: []byte(st.selectedModel)}},
-						{Header: &core_v3.HeaderValue{Key: headerSelectedDomain, RawValue: []byte(st.domain)}},
-						{Header: &core_v3.HeaderValue{Key: headerModelScores, RawValue: st.scoresJSON}},
-					}
+			st.scoresJSON, _ = json.Marshal(scores)
+
+			// Inject routing headers into the DEFERRED header response.
+			if st.selectedModel != "" {
+				hdrResp := st.deferredHeaderResp.GetRequestHeaders()
+				hdrResp.Response.HeaderMutation = &service_ext_proc_v3.HeaderMutation{
+					SetHeaders: []*core_v3.HeaderValueOption{
+						{Header: &core_v3.HeaderValue{Key: headerSelectedModel, Value: st.selectedModel}},
+						{Header: &core_v3.HeaderValue{Key: headerSelectedDomain, Value: st.domain}},
+						{Header: &core_v3.HeaderValue{Key: headerModelScores, Value: string(st.scoresJSON)}},
+					},
 				}
 			}
 
-			// Echo body via StreamedResponse (required by AgentGateway's full_duplex_streaming mode).
-			// Header mutation is added for observability only; routing is handled by the HTTP proxy.
+			// Send the deferred header response FIRST — AgentGateway will use
+			// the x-router-selected-model header for route selection.
+			if err := srv.Send(st.deferredHeaderResp); err != nil {
+				log.Printf("[ext_proc] send deferred header error: %v", err)
+				return err
+			}
+			log.Printf("[ext_proc] sent deferred header response with model=%s", st.selectedModel)
+
+			// Then send the body response with StreamedResponse to pass the
+			// body through to the upstream.
 			resp = &service_ext_proc_v3.ProcessingResponse{
 				Response: &service_ext_proc_v3.ProcessingResponse_RequestBody{
 					RequestBody: &service_ext_proc_v3.BodyResponse{
 						Response: &service_ext_proc_v3.CommonResponse{
-							Status:         service_ext_proc_v3.CommonResponse_CONTINUE,
-							HeaderMutation: &service_ext_proc_v3.HeaderMutation{SetHeaders: reqSetHeaders},
+							Status: service_ext_proc_v3.CommonResponse_CONTINUE,
 							BodyMutation: &service_ext_proc_v3.BodyMutation{
 								Mutation: &service_ext_proc_v3.BodyMutation_StreamedResponse{
 									StreamedResponse: &service_ext_proc_v3.StreamedBodyResponse{
-										Body:        h.Body,
-										EndOfStream: h.EndOfStream,
+										Body:        st.bodyBuffer,
+										EndOfStream: true,
 									},
 								},
 							},
@@ -325,9 +354,9 @@ func (s *server) Process(srv service_ext_proc_v3.ExternalProcessor_ProcessServer
 			var setHeaders []*core_v3.HeaderValueOption
 			if st.selectedModel != "" {
 				setHeaders = []*core_v3.HeaderValueOption{
-					{Header: &core_v3.HeaderValue{Key: headerSelectedModel, RawValue: []byte(st.selectedModel)}},
-					{Header: &core_v3.HeaderValue{Key: headerSelectedDomain, RawValue: []byte(st.domain)}},
-					{Header: &core_v3.HeaderValue{Key: headerModelScores, RawValue: st.scoresJSON}},
+					{Header: &core_v3.HeaderValue{Key: headerSelectedModel, Value: st.selectedModel}},
+					{Header: &core_v3.HeaderValue{Key: headerSelectedDomain, Value: st.domain}},
+					{Header: &core_v3.HeaderValue{Key: headerModelScores, Value: string(st.scoresJSON)}},
 				}
 			}
 			resp = &service_ext_proc_v3.ProcessingResponse{
@@ -339,6 +368,9 @@ func (s *server) Process(srv service_ext_proc_v3.ExternalProcessor_ProcessServer
 							},
 						},
 					},
+				},
+				ModeOverride: &http_ext_proc_v3.ProcessingMode{
+					ResponseBodyMode: http_ext_proc_v3.ProcessingMode_BUFFERED,
 				},
 			}
 
@@ -403,17 +435,17 @@ func route(body []byte, state *routerState, latencyMs map[string]float64, budget
 		return
 	}
 
-	// 1. Keyword-based domain classification.
-	if state.classifier != nil {
-		if d, _ := state.classifier.Classify(userContent); d != "" {
+	// 1. ML classifier (primary - BERT domain classification).
+	if state.mlClassifier != nil {
+		if d, conf := state.mlClassifier.Classify(userContent); d != "" {
+			log.Printf("[route] ML classifier: domain=%s confidence=%.3f", d, conf)
 			domain = d
 		}
 	}
 
-	// 2. ML classifier fallback (only when keyword produces no match).
-	if domain == "" && state.mlClassifier != nil {
-		if d, conf := state.mlClassifier.Classify(userContent); d != "" {
-			log.Printf("[route] ML classifier: domain=%s confidence=%.3f", d, conf)
+	// 2. Keyword classifier fallback (when ML disabled or returns no match).
+	if domain == "" && state.classifier != nil {
+		if d, _ := state.classifier.Classify(userContent); d != "" {
 			domain = d
 		}
 	}
@@ -674,6 +706,9 @@ func main() {
 	flag.Parse()
 
 	switch {
+	case *crWatch:
+		log.Printf("Starting intelligent-router  mode=cr-watch  grpc=%s  metrics=%s",
+			*grpcPort, *metricsPort)
 	case *poolPath != "" && *routePath != "":
 		log.Printf("Starting intelligent-router  mode=CR  pool=%s  route=%s  grpc=%s  metrics=%s",
 			*poolPath, *routePath, *grpcPort, *metricsPort)
@@ -692,7 +727,14 @@ func main() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	go watchConfig(ctx, *configPath, *crPath, *poolPath, *routePath, srv)
+
+	if *crWatch {
+		if err := startCRWatcher(ctx, srv); err != nil {
+			log.Fatalf("failed to start CR watcher: %v", err)
+		}
+	} else {
+		go watchConfig(ctx, *configPath, *crPath, *poolPath, *routePath, srv)
+	}
 
 	go func() {
 		mux := http.NewServeMux()

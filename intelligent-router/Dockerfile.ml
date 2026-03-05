@@ -1,6 +1,6 @@
 # Dockerfile.ml — model-router with M-Vert Pro (BERT/candle) domain classifier.
 #
-# Build context: the semantic-router/ directory (parent of custom-router/).
+# Build context: the repository root directory.
 #
 # The BERT model is NOT embedded in this image.
 # It is downloaded at pod startup by an initContainer (see manifests/statefulset.yaml)
@@ -20,7 +20,7 @@ WORKDIR /app
 
 # Copy the full candle-binding directory and build the shared library.
 # CPU-only build: --no-default-features disables CUDA/MKL/Accelerate.
-COPY candle-binding/ candle-binding/
+COPY semantic-router/candle-binding/ candle-binding/
 RUN cd candle-binding && \
     cargo build --release --no-default-features && \
     echo "Built:" && ls -lh target/release/libcandle_semantic_router.so
@@ -30,17 +30,17 @@ FROM golang:bookworm AS go-builder
 
 WORKDIR /app
 
-COPY candle-binding/go.mod candle-binding/semantic-router.go candle-binding/
+COPY semantic-router/candle-binding/go.mod semantic-router/candle-binding/semantic-router.go candle-binding/
 COPY --from=rust-builder /app/candle-binding/target/release/libcandle_semantic_router.so \
     candle-binding/target/release/libcandle_semantic_router.so
 
-COPY custom-router/go.mod custom-router/go.sum custom-router/
-RUN cd custom-router && GOFLAGS="-mod=mod" go mod download
+COPY intelligent-router/go.mod intelligent-router/go.sum intelligent-router/
+RUN cd intelligent-router && GOFLAGS="-mod=mod" go mod download
 
-COPY custom-router/ custom-router/
+COPY intelligent-router/ intelligent-router/
 
 ARG TARGETOS=linux TARGETARCH
-RUN cd custom-router && \
+RUN cd intelligent-router && \
     CGO_ENABLED=1 \
     GOOS=${TARGETOS} \
     GOFLAGS="-mod=mod" \
@@ -59,7 +59,7 @@ COPY --from=go-builder /app/router /app/router
 COPY --from=rust-builder \
     /app/candle-binding/target/release/libcandle_semantic_router.so \
     /app/lib/libcandle_semantic_router.so
-COPY custom-router/config.yaml /app/config.yaml
+COPY intelligent-router/config.yaml /app/config.yaml
 
 # /app/models is populated at runtime by the initContainer (see manifests/statefulset.yaml).
 RUN mkdir -p /app/models/domain-classifier
