@@ -126,6 +126,83 @@ spec:
             - name: model-storage
               mountPath: /app/models
 
+        # Merge LoRA adapter into base model so the Rust classifier finds
+        # a single model.safetensors with all weights (backbone + classifier head).
+        - name: merge-lora-adapter
+          image: python:3.11-slim
+          command:
+            - python3
+            - -c
+            - |
+              import os, sys
+
+              MODEL_DIR = "/app/models/domain-classifier"
+              BASE_DIR = "/app/models/mmbert-32k-yarn"
+              MERGED_MARKER = os.path.join(MODEL_DIR, ".merge-complete")
+              MERGED_WEIGHTS = os.path.join(MODEL_DIR, "model.safetensors")
+
+              if os.path.exists(MERGED_MARKER) and os.path.exists(MERGED_WEIGHTS):
+                  print("Merged model already exists, skipping.")
+                  sys.exit(0)
+
+              print("==> Installing peft + transformers (one-time)...")
+              os.system("pip install -q peft transformers safetensors torch --no-cache-dir")
+
+              print("==> Merging LoRA adapter into base model...")
+              from peft import PeftModel
+              from transformers import AutoModelForSequenceClassification, AutoConfig
+              import shutil
+
+              # Remove stale symlinks from previous attempts
+              for stale in ["config.json", "model.safetensors"]:
+                  p = os.path.join(MODEL_DIR, stale)
+                  if os.path.islink(p):
+                      os.remove(p)
+
+              # Copy config.json from base model so transformers can load the architecture
+              shutil.copy2(os.path.join(BASE_DIR, "config.json"), os.path.join(MODEL_DIR, "config.json"))
+
+              # Load base model and LoRA adapter, then merge
+              base_model = AutoModelForSequenceClassification.from_pretrained(
+                  BASE_DIR, num_labels=14, ignore_mismatched_sizes=True
+              )
+              lora_model = PeftModel.from_pretrained(base_model, MODEL_DIR)
+              merged = lora_model.merge_and_unload()
+
+              # Save merged model as model.safetensors
+              merged.save_pretrained(MODEL_DIR, safe_serialization=True)
+
+              # Restore original config.json (save_pretrained overwrites it with a
+              # transformers-formatted version that's missing fields the Rust candle
+              # code expects, like global_rope_theta), then patch num_labels to 14.
+              import json
+              with open(os.path.join(BASE_DIR, "config.json")) as f:
+                  cfg = json.load(f)
+              cfg["num_labels"] = 14
+              cfg["id2label"] = {str(i): str(i) for i in range(14)}
+              cfg["label2id"] = {str(i): i for i in range(14)}
+              with open(os.path.join(MODEL_DIR, "config.json"), "w") as f:
+                  json.dump(cfg, f, indent=2)
+              print(f"==> Merged model saved to {MODEL_DIR}")
+
+              # Write merge marker
+              open(MERGED_MARKER, "w").close()
+
+              # List final files
+              for f in sorted(os.listdir(MODEL_DIR)):
+                  size = os.path.getsize(os.path.join(MODEL_DIR, f))
+                  print(f"  {f}: {size/1024/1024:.1f} MB" if size > 1024*1024 else f"  {f}: {size} B")
+          volumeMounts:
+            - name: model-storage
+              mountPath: /app/models
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "4Gi"
+            limits:
+              cpu: "2000m"
+              memory: "8Gi"
+
       containers:
         - name: intelligent-router
           image: antonioberben/intelligent-router:latest

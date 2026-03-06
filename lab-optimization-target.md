@@ -179,7 +179,7 @@ kubectl apply -f manifests/httproutes.yaml
 kubectl apply -f manifests/namespace.yaml
 kubectl apply -f intelligent-router/manifests/rbac.yaml
 kubectl apply -f manifests/intelligent-router-service.yaml
-kubectl apply -f intelligent-router/manifests/statefulset.yaml
+ll
 ```
 
 Wait for it to be ready:
