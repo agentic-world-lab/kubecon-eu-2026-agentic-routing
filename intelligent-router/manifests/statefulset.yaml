@@ -42,6 +42,8 @@ spec:
         prometheus.io/path: "/metrics"
     spec:
       serviceAccountName: intelligent-router
+      securityContext:
+        fsGroup: 10101
       initContainers:
         - name: download-bert-model
           image: curlimages/curl:latest
