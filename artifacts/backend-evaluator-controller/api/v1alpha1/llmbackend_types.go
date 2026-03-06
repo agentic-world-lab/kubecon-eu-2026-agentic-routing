@@ -58,9 +58,9 @@ type EvaluationResults struct {
 	// +optional
 	OverallAccuracy string `json:"overallAccuracy,omitempty"`
 
-	// tokPerSecond is the average tokens per second during evaluation.
+	// tokensPerSecond is the average tokens per second during evaluation.
 	// +optional
-	TokPerSecond string `json:"tokPerSecond,omitempty"`
+	TokensPerSecond string `json:"tokensPerSecond,omitempty"`
 
 	// avgResponseTime is the average response time in seconds.
 	// +optional

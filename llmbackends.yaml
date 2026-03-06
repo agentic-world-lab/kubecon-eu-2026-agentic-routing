@@ -3,22 +3,14 @@ items:
 - apiVersion: edgecloudlabs.edgecloudlabs.com/v1alpha1
   kind: LLMBackend
   metadata:
-    annotations:
-      kubectl.kubernetes.io/last-applied-configuration: |
-        {"apiVersion":"edgecloudlabs.edgecloudlabs.com/v1alpha1","kind":"LLMBackend","metadata":{"annotations":{},"name":"gpt-3.5-turbo-public","namespace":"default"},"spec":{"apiKeySecretRef":{"name":"openai-secret"},"deployment":"remote","model":"gpt-3.5-turbo","triggerEvaluation":true}}
-    creationTimestamp: "2026-03-03T21:11:30Z"
-    generation: 1
     name: gpt-3.5-turbo-public
     namespace: default
-    resourceVersion: "5231650"
-    uid: b6c0cb25-8bf8-42f9-a90f-27b5bb06e598
   spec:
     apiKeySecretRef:
       name: openai-secret
     deployment: remote
     evaluationImage: fjvicens/mmlu-pro-eval-job:0.2
     model: gpt-3.5-turbo
-    triggerEvaluation: true
   status:
     backendName: gpt-3.5-turbo
     conditions:
@@ -55,14 +47,8 @@ items:
   kind: LLMBackend
   metadata:
     annotations:
-      kubectl.kubernetes.io/last-applied-configuration: |
-        {"apiVersion":"edgecloudlabs.edgecloudlabs.com/v1alpha1","kind":"LLMBackend","metadata":{"annotations":{},"name":"gpt-4.1-public","namespace":"default"},"spec":{"apiKeySecretRef":{"name":"openai-secret"},"deployment":"remote","model":"gpt-4.1","triggerEvaluation":true}}
-    creationTimestamp: "2026-03-03T22:06:12Z"
-    generation: 1
     name: gpt-4.1-public
     namespace: default
-    resourceVersion: "5241146"
-    uid: 05bcb916-424c-4f9e-b7b3-4a30b13c140a
   spec:
     apiKeySecretRef:
       name: openai-secret
@@ -104,12 +90,8 @@ items:
 - apiVersion: edgecloudlabs.edgecloudlabs.com/v1alpha1
   kind: LLMBackend
   metadata:
-    creationTimestamp: "2026-03-05T13:21:51Z"
-    generation: 1
     name: gpt-oss-120b-local
     namespace: default
-    resourceVersion: "5615570"
-    uid: 8e2fe895-96f6-4d21-a674-480be95b5f62
   spec:
     deployment: local
     endpoint: http://10.95.161.240:8000/v1
@@ -151,14 +133,3 @@ items:
 kind: List
 metadata:
   resourceVersion: ""
-
-
-# Configuración basada en calidad de la respuesta:
-
-config.yaml
-
-```yaml
-optimization_target: "accuracy" # "latency" | "cost" | "accuracy"
-```
-
-

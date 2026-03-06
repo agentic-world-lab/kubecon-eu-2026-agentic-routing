@@ -33,7 +33,7 @@ Example benchmark format:
         "business": 0.4
       },
       "overallAccuracy": 0.4143,
-      "tokPerSecond": 20.59
+      "tokensPerSecond": 20.59
     }
   }
 ]

@@ -92,7 +92,7 @@ def select_best_models(benchmarks):
         model = entry["model"]
         results = entry["results"]
         latency = results.get("avgResponseTime", float("inf"))
-        tokps = results.get("tokPerSecond", 0)
+        tokps = results.get("tokensPerSecond", 0)
         cats = results.get("categoryAccuracy", {})
 
         for domain, acc in cats.items():

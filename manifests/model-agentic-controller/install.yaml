@@ -3,9 +3,9 @@ kind: Namespace
 metadata:
   labels:
     app.kubernetes.io/managed-by: kustomize
-    app.kubernetes.io/name: model-backend-controller
+    app.kubernetes.io/name: model-agentic-controller
     control-plane: controller-manager
-  name: model-backend-controller-system
+  name: model-agentic-controller-system
 ---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
@@ -215,8 +215,8 @@ spec:
                     description: overallAccuracy is the overall accuracy of the model
                       across all categories.
                     type: string
-                  tokPerSecond:
-                    description: tokPerSecond is the average tokens per second during
+                  tokensPerSecond:
+                    description: tokensPerSecond is the average tokens per second during
                       evaluation.
                     type: string
                 type: object
@@ -234,18 +234,18 @@ kind: ServiceAccount
 metadata:
   labels:
     app.kubernetes.io/managed-by: kustomize
-    app.kubernetes.io/name: model-backend-controller
-  name: model-backend-controller-controller-manager
-  namespace: model-backend-controller-system
+    app.kubernetes.io/name: model-agentic-controller
+  name: model-agentic-controller-controller-manager
+  namespace: model-agentic-controller-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   labels:
     app.kubernetes.io/managed-by: kustomize
-    app.kubernetes.io/name: model-backend-controller
-  name: model-backend-controller-leader-election-role
-  namespace: model-backend-controller-system
+    app.kubernetes.io/name: model-agentic-controller
+  name: model-agentic-controller-leader-election-role
+  namespace: model-agentic-controller-system
 rules:
 - apiGroups:
   - ""
@@ -282,7 +282,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: model-backend-controller-manager-role
+  name: model-agentic-controller-manager-role
 rules:
 - apiGroups:
   - ""
@@ -372,7 +372,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: model-backend-controller-metrics-auth-role
+  name: model-agentic-controller-metrics-auth-role
 rules:
 - apiGroups:
   - authentication.k8s.io
@@ -390,7 +390,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: model-backend-controller-metrics-reader
+  name: model-agentic-controller-metrics-reader
 rules:
 - nonResourceURLs:
   - /metrics
@@ -402,56 +402,56 @@ kind: RoleBinding
 metadata:
   labels:
     app.kubernetes.io/managed-by: kustomize
-    app.kubernetes.io/name: model-backend-controller
-  name: model-backend-controller-leader-election-rolebinding
-  namespace: model-backend-controller-system
+    app.kubernetes.io/name: model-agentic-controller
+  name: model-agentic-controller-leader-election-rolebinding
+  namespace: model-agentic-controller-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: model-backend-controller-leader-election-role
+  name: model-agentic-controller-leader-election-role
 subjects:
 - kind: ServiceAccount
-  name: model-backend-controller-controller-manager
-  namespace: model-backend-controller-system
+  name: model-agentic-controller-controller-manager
+  namespace: model-agentic-controller-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   labels:
     app.kubernetes.io/managed-by: kustomize
-    app.kubernetes.io/name: model-backend-controller
-  name: model-backend-controller-manager-rolebinding
+    app.kubernetes.io/name: model-agentic-controller
+  name: model-agentic-controller-manager-rolebinding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: model-backend-controller-manager-role
+  name: model-agentic-controller-manager-role
 subjects:
 - kind: ServiceAccount
-  name: model-backend-controller-controller-manager
-  namespace: model-backend-controller-system
+  name: model-agentic-controller-controller-manager
+  namespace: model-agentic-controller-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: model-backend-controller-metrics-auth-rolebinding
+  name: model-agentic-controller-metrics-auth-rolebinding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: model-backend-controller-metrics-auth-role
+  name: model-agentic-controller-metrics-auth-role
 subjects:
 - kind: ServiceAccount
-  name: model-backend-controller-controller-manager
-  namespace: model-backend-controller-system
+  name: model-agentic-controller-controller-manager
+  namespace: model-agentic-controller-system
 ---
 apiVersion: v1
 kind: Service
 metadata:
   labels:
     app.kubernetes.io/managed-by: kustomize
-    app.kubernetes.io/name: model-backend-controller
+    app.kubernetes.io/name: model-agentic-controller
     control-plane: controller-manager
-  name: model-backend-controller-controller-manager-metrics-service
-  namespace: model-backend-controller-system
+  name: model-agentic-controller-controller-manager-metrics-service
+  namespace: model-agentic-controller-system
 spec:
   ports:
   - name: https
@@ -459,72 +459,5 @@ spec:
     protocol: TCP
     targetPort: 8443
   selector:
-    app.kubernetes.io/name: model-backend-controller
+    app.kubernetes.io/name: model-agentic-controller
     control-plane: controller-manager
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  labels:
-    app.kubernetes.io/managed-by: kustomize
-    app.kubernetes.io/name: model-backend-controller
-    control-plane: controller-manager
-  name: model-backend-controller-controller-manager
-  namespace: model-backend-controller-system
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: model-backend-controller
-      control-plane: controller-manager
-  template:
-    metadata:
-      annotations:
-        kubectl.kubernetes.io/default-container: manager
-      labels:
-        app.kubernetes.io/name: model-backend-controller
-        control-plane: controller-manager
-    spec:
-      containers:
-      - args:
-        - --metrics-bind-address=:8443
-        - --leader-elect
-        - --health-probe-bind-address=:8081
-        command:
-        - /manager
-        image: fjvicens/backend-evaluation-operator:latest
-        livenessProbe:
-          httpGet:
-            path: /healthz
-            port: 8081
-          initialDelaySeconds: 15
-          periodSeconds: 20
-        name: manager
-        ports: []
-        readinessProbe:
-          httpGet:
-            path: /readyz
-            port: 8081
-          initialDelaySeconds: 5
-          periodSeconds: 10
-        resources:
-          limits:
-            cpu: 500m
-            memory: 128Mi
-          requests:
-            cpu: 10m
-            memory: 64Mi
-        securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-            - ALL
-          readOnlyRootFilesystem: true
-        volumeMounts: []
-      securityContext:
-        runAsNonRoot: true
-        seccompProfile:
-          type: RuntimeDefault
-      serviceAccountName: model-backend-controller-controller-manager
-      terminationGracePeriodSeconds: 10
-      volumes: []

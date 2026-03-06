@@ -1,0 +1,29 @@
+apiVersion: kagent.dev/v1alpha2
+kind: Agent
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"kagent.dev/v1alpha2","kind":"Agent","metadata":{"annotations":{},"name":"sp-electricity-cost-agent","namespace":"kagent"},"spec":{"declarative":{"modelConfig":"default-model-config","stream":true,"systemMessage":"Instructions:\n* Use the 'spain-electricity-cost-mcp' to answer questions about power pricing.\n* Never expose internal reasoning.\n* Never describe tool planning.\n* Only return the final structured answer.\n\nOutput:\n* The response MUST be in json. \n  * For electricity: Example: '{ \"price\": \"0.007\"}'\n","tools":[{"mcpServer":{"apiGroup":"kagent.dev","kind":"MCPServer","name":"spain-electricity-cost-mcp","namespace":"kagent","toolNames":["get_current_price"]},"type":"McpServer"}]},"description":"Assistant that can check electricity costs in Spain","type":"Declarative"}}
+  generation: 1
+  name: sp-electricity-cost-agent
+  namespace: kagent
+spec:
+  declarative:
+    modelConfig: default-model-config
+    stream: true
+    systemMessage: "Instructions:\n* Use the 'spain-electricity-cost-mcp' to answer
+      questions about power pricing.\n* Never expose internal reasoning.\n* Never
+      describe tool planning.\n* Only return the final structured answer.\n\nOutput:\n*
+      The response MUST be in json. \n  * For electricity: Example: '{ \"price\":
+      \"0.007\"}'\n"
+    tools:
+    - mcpServer:
+        apiGroup: kagent.dev
+        kind: MCPServer
+        name: spain-electricity-cost-mcp
+        namespace: kagent
+        toolNames:
+        - get_current_price
+      type: McpServer
+  description: Assistant that can check electricity costs in Spain
+  type: Declarative

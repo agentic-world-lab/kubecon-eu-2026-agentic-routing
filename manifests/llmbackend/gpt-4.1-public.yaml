@@ -8,4 +8,3 @@ spec:
   model: gpt-4.1
   apiKeySecretRef:
     name: openai-secret
-  triggerEvaluation: true

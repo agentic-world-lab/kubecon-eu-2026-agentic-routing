@@ -63,7 +63,7 @@ Example:
         "psychology": 0.6000
       },
       "overallAccuracy": 0.4143,
-      "tokPerSecond": 20.59
+      "tokensPerSecond": 20.59
     }
   },
   {
@@ -87,7 +87,7 @@ Example:
         "psychology": 0.6000
       },
       "overallAccuracy": 0.6714,
-      "tokPerSecond": 44.05
+      "tokensPerSecond": 44.05
     }
   },
   {
@@ -111,7 +111,7 @@ Example:
         "psychology": 0.4000
       },
       "overallAccuracy": 0.6714,
-      "tokPerSecond": 198.82
+      "tokensPerSecond": 198.82
     }
   }
 ]
@@ -133,7 +133,7 @@ categoryAccuracy
 Tie breaking:
 
 1. lowest avgResponseTime
-2. highest tokPerSecond
+2. highest tokensPerSecond
 3. alphabetical model name
 
 ## Output

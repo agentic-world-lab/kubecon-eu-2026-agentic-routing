@@ -9,4 +9,3 @@ spec:
   endpoint: http://10.95.161.240:8000/v1
   #apiKeySecretRef:
   #  name: model-api-key
-  triggerEvaluation: true

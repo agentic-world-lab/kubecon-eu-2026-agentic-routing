@@ -81,7 +81,7 @@ def _build_payload(model_name: str, results: dict) -> dict:
             "avgResponseTime": metrics.get("avgResponseTime", "0"),
             "categoryAccuracy": metrics.get("categoryAccuracy", {}),
             "overallAccuracy": metrics.get("overallAccuracy", "0"),
-            "tokPerSecond": metrics.get("tokPerSecond", "0"),
+            "tokensPerSecond": metrics.get("tokensPerSecond", "0"),
         })
 
     return {

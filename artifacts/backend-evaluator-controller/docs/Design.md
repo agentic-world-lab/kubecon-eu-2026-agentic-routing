@@ -79,8 +79,6 @@ spec:
   endpoint: http://10.95.161.240:8000/v1
   apiKeySecretRef:
     name: model-api-key
-  triggerEvaluation: true
-
 ```
 
 ------------------------------------------------------------------------
@@ -94,7 +92,7 @@ status:
   jobName: mmlu-pro-job-abc123
   results:
     overallAccuracy: "0.7500"
-    tokPerSecond: "197.60"
+    tokensPerSecond: "197.60"
     avgResponseTime: "2.3800"
     categoryAccuracy:
       business: "0.6000"

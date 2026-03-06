@@ -98,7 +98,7 @@ type evaluationOutput struct {
 	Model            string             `json:"model"`
 	OverallAccuracy  float64            `json:"overall_accuracy"`
 	AvgResponseTime  float64            `json:"avg_response_time"`
-	TokPerSecond     float64            `json:"tok/s"`
+	TokensPerSecond  float64            `json:"tokensPerSecond"`
 	CategoryAccuracy map[string]float64 `json:"category_accuracy"`
 }
 
@@ -590,7 +590,7 @@ func (r *LLMBackendReconciler) collectResults(ctx context.Context, eval *edgeclo
 	// Validate results
 	// If all metrics are zero or category accuracy is empty, it's likely a failed run
 	// that produced a default JSON output.
-	if (result.OverallAccuracy == 0 && result.TokPerSecond == 0 && result.AvgResponseTime == 0) || len(result.CategoryAccuracy) == 0 {
+	if (result.OverallAccuracy == 0 && result.TokensPerSecond == 0 && result.AvgResponseTime == 0) || len(result.CategoryAccuracy) == 0 {
 		log.Error(nil, "Evaluation Job produced zeroed or empty results", "rawOutput", rawOutput)
 		return r.setFailed(ctx, eval, "Evaluation produced empty or zeroed results. Check job logs for API errors.")
 	}
@@ -602,7 +602,7 @@ func (r *LLMBackendReconciler) collectResults(ctx context.Context, eval *edgeclo
 	// Store results in status
 	eval.Status.Results = &edgecloudlabsv1alpha1.EvaluationResults{
 		OverallAccuracy:  fmt.Sprintf("%.4f", result.OverallAccuracy),
-		TokPerSecond:     fmt.Sprintf("%.2f", result.TokPerSecond),
+		TokensPerSecond:  fmt.Sprintf("%.2f", result.TokensPerSecond),
 		AvgResponseTime:  fmt.Sprintf("%.4f", result.AvgResponseTime),
 		CategoryAccuracy: make(map[string]string),
 	}
@@ -613,12 +613,12 @@ func (r *LLMBackendReconciler) collectResults(ctx context.Context, eval *edgeclo
 
 	r.Recorder.Eventf(eval, corev1.EventTypeNormal, "EvaluationCompleted",
 		"Model %s evaluation complete: accuracy=%.4f, tok/s=%.2f, avg_response_time=%.4fs",
-		eval.Spec.Model, result.OverallAccuracy, result.TokPerSecond, result.AvgResponseTime)
+		eval.Spec.Model, result.OverallAccuracy, result.TokensPerSecond, result.AvgResponseTime)
 
 	log.Info("Evaluation results collected",
 		"model", eval.Spec.Model,
 		"accuracy", result.OverallAccuracy,
-		"tokPerSecond", result.TokPerSecond,
+		"tokensPerSecond", result.TokensPerSecond,
 		"avgResponseTime", result.AvgResponseTime)
 
 	// Transition to Evaluated

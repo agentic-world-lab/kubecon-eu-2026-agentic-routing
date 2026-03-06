@@ -110,11 +110,6 @@ spec:
                 description: model is the name/identifier of the AI model to evaluate.
                 minLength: 1
                 type: string
-              triggerEvaluation:
-                default: true
-                description: triggerEvaluation controls whether the evaluation Job
-                  should be created.
-                type: boolean
             required:
             - deployment
             - model
@@ -215,8 +210,8 @@ spec:
                     description: overallAccuracy is the overall accuracy of the model
                       across all categories.
                     type: string
-                  tokPerSecond:
-                    description: tokPerSecond is the average tokens per second during
+                  tokensPerSecond:
+                    description: tokensPerSecond is the average tokens per second during
                       evaluation.
                     type: string
                 type: object
