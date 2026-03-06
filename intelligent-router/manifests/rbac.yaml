@@ -1,6 +1,6 @@
-# RBAC for the intelligent-router CR watcher.
-# The router needs get/list/watch on IntelligentRouterConfig CRs so the
-# --cr-watch flag can hot-reload config without a pod restart.
+# RBAC for the intelligent-router LLMBackend watcher.
+# The router watches LLMBackend CRs across all namespaces to discover
+# evaluated models and build routing config dynamically.
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -17,8 +17,8 @@ metadata:
   labels:
     app.kubernetes.io/name: intelligent-router
 rules:
-  - apiGroups: ["vllm.ai"]
-    resources: ["intelligentrouterconfigs"]
+  - apiGroups: ["edgecloudlabs.edgecloudlabs.com"]
+    resources: ["llmbackends"]
     verbs: ["get", "list", "watch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1

@@ -1,5 +1,5 @@
-   0.210724167s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="candle_semantic_router"}: cargo::core::compiler::fingerprint: fingerprint error for candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding)/Check { test: false }/TargetInner { ..: lib_target("candle_semantic_router", ["rlib", "staticlib", "cdylib"], "/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/src/lib.rs", Edition2021) }
-   0.210801292s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="candle_semantic_router"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-semantic-router-8a623d03cfe6e543/lib-candle_semantic_router`
+   0.268499625s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="candle_semantic_router"}: cargo::core::compiler::fingerprint: fingerprint error for candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding)/Check { test: false }/TargetInner { ..: lib_target("candle_semantic_router", ["rlib", "staticlib", "cdylib"], "/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/src/lib.rs", Edition2021) }
+   0.268568708s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="candle_semantic_router"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-semantic-router-8a623d03cfe6e543/lib-candle_semantic_router`
 
 Caused by:
     No such file or directory (os error 2)
@@ -22,8 +22,8 @@ Stack backtrace:
   14: std::rt::lang_start::<()>::{closure#0}
   15: std::rt::lang_start_internal
   16: _main
-   0.228345792s  INFO prepare_target{force=false package_id=candle-core v0.9.2-alpha.1 (https://github.com/huggingface/candle?tag=0.9.2-alpha.1#d312da23) target="candle_core"}: cargo::core::compiler::fingerprint: fingerprint error for candle-core v0.9.2-alpha.1 (https://github.com/huggingface/candle?tag=0.9.2-alpha.1#d312da23)/Check { test: false }/TargetInner { name_inferred: true, ..: lib_target("candle_core", ["lib"], "/Users/antonio/.cargo/git/checkouts/candle-5b4d092929d18d36/d312da2/candle-core/src/lib.rs", Edition2021) }
-   0.228354292s  INFO prepare_target{force=false package_id=candle-core v0.9.2-alpha.1 (https://github.com/huggingface/candle?tag=0.9.2-alpha.1#d312da23) target="candle_core"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-core-61bce325074821d2/lib-candle_core`
+   0.277777500s  INFO prepare_target{force=false package_id=candle-core v0.9.2-alpha.1 (https://github.com/huggingface/candle?tag=0.9.2-alpha.1#d312da23) target="candle_core"}: cargo::core::compiler::fingerprint: fingerprint error for candle-core v0.9.2-alpha.1 (https://github.com/huggingface/candle?tag=0.9.2-alpha.1#d312da23)/Check { test: false }/TargetInner { name_inferred: true, ..: lib_target("candle_core", ["lib"], "/Users/antonio/.cargo/git/checkouts/candle-5b4d092929d18d36/d312da2/candle-core/src/lib.rs", Edition2021) }
+   0.277790083s  INFO prepare_target{force=false package_id=candle-core v0.9.2-alpha.1 (https://github.com/huggingface/candle?tag=0.9.2-alpha.1#d312da23) target="candle_core"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-core-61bce325074821d2/lib-candle_core`
 
 Caused by:
     No such file or directory (os error 2)
@@ -47,8 +47,8 @@ Stack backtrace:
   15: std::rt::lang_start::<()>::{closure#0}
   16: std::rt::lang_start_internal
   17: _main
-   0.229082125s  INFO prepare_target{force=false package_id=candle-kernels v0.9.2-alpha.1 (https://github.com/huggingface/candle?tag=0.9.2-alpha.1#d312da23) target="candle_kernels"}: cargo::core::compiler::fingerprint: fingerprint error for candle-kernels v0.9.2-alpha.1 (https://github.com/huggingface/candle?tag=0.9.2-alpha.1#d312da23)/Check { test: false }/TargetInner { name_inferred: true, ..: lib_target("candle_kernels", ["lib"], "/Users/antonio/.cargo/git/checkouts/candle-5b4d092929d18d36/d312da2/candle-kernels/src/lib.rs", Edition2021) }
-   0.229088417s  INFO prepare_target{force=false package_id=candle-kernels v0.9.2-alpha.1 (https://github.com/huggingface/candle?tag=0.9.2-alpha.1#d312da23) target="candle_kernels"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-kernels-b03a38805e1c8b3d/lib-candle_kernels`
+   0.278499917s  INFO prepare_target{force=false package_id=candle-kernels v0.9.2-alpha.1 (https://github.com/huggingface/candle?tag=0.9.2-alpha.1#d312da23) target="candle_kernels"}: cargo::core::compiler::fingerprint: fingerprint error for candle-kernels v0.9.2-alpha.1 (https://github.com/huggingface/candle?tag=0.9.2-alpha.1#d312da23)/Check { test: false }/TargetInner { name_inferred: true, ..: lib_target("candle_kernels", ["lib"], "/Users/antonio/.cargo/git/checkouts/candle-5b4d092929d18d36/d312da2/candle-kernels/src/lib.rs", Edition2021) }
+   0.278505708s  INFO prepare_target{force=false package_id=candle-kernels v0.9.2-alpha.1 (https://github.com/huggingface/candle?tag=0.9.2-alpha.1#d312da23) target="candle_kernels"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-kernels-b03a38805e1c8b3d/lib-candle_kernels`
 
 Caused by:
     No such file or directory (os error 2)
@@ -73,8 +73,8 @@ Stack backtrace:
   16: std::rt::lang_start::<()>::{closure#0}
   17: std::rt::lang_start_internal
   18: _main
-   0.229282250s  INFO prepare_target{force=false package_id=candle-kernels v0.9.2-alpha.1 (https://github.com/huggingface/candle?tag=0.9.2-alpha.1#d312da23) target="build-script-build"}: cargo::core::compiler::fingerprint: fingerprint error for candle-kernels v0.9.2-alpha.1 (https://github.com/huggingface/candle?tag=0.9.2-alpha.1#d312da23)/RunCustomBuild/TargetInner { ..: custom_build_target("build-script-build", "/Users/antonio/.cargo/git/checkouts/candle-5b4d092929d18d36/d312da2/candle-kernels/build.rs", Edition2021) }
-   0.229287375s  INFO prepare_target{force=false package_id=candle-kernels v0.9.2-alpha.1 (https://github.com/huggingface/candle?tag=0.9.2-alpha.1#d312da23) target="build-script-build"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-kernels-0acfa3354e3fdfc6/run-build-script-build-script-build`
+   0.278733792s  INFO prepare_target{force=false package_id=candle-kernels v0.9.2-alpha.1 (https://github.com/huggingface/candle?tag=0.9.2-alpha.1#d312da23) target="build-script-build"}: cargo::core::compiler::fingerprint: fingerprint error for candle-kernels v0.9.2-alpha.1 (https://github.com/huggingface/candle?tag=0.9.2-alpha.1#d312da23)/RunCustomBuild/TargetInner { ..: custom_build_target("build-script-build", "/Users/antonio/.cargo/git/checkouts/candle-5b4d092929d18d36/d312da2/candle-kernels/build.rs", Edition2021) }
+   0.278740458s  INFO prepare_target{force=false package_id=candle-kernels v0.9.2-alpha.1 (https://github.com/huggingface/candle?tag=0.9.2-alpha.1#d312da23) target="build-script-build"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-kernels-0acfa3354e3fdfc6/run-build-script-build-script-build`
 
 Caused by:
     No such file or directory (os error 2)
@@ -101,8 +101,8 @@ Stack backtrace:
   18: std::rt::lang_start::<()>::{closure#0}
   19: std::rt::lang_start_internal
   20: _main
-   0.230219792s  INFO prepare_target{force=false package_id=cudarc v0.17.8 target="cudarc"}: cargo::core::compiler::fingerprint: fingerprint error for cudarc v0.17.8/Check { test: false }/TargetInner { ..: lib_target("cudarc", ["lib"], "/Users/antonio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cudarc-0.17.8/src/lib.rs", Edition2021) }
-   0.230223792s  INFO prepare_target{force=false package_id=cudarc v0.17.8 target="cudarc"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/cudarc-7b5f5fa8a8c350ae/lib-cudarc`
+   0.279777250s  INFO prepare_target{force=false package_id=cudarc v0.17.8 target="cudarc"}: cargo::core::compiler::fingerprint: fingerprint error for cudarc v0.17.8/Check { test: false }/TargetInner { ..: lib_target("cudarc", ["lib"], "/Users/antonio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cudarc-0.17.8/src/lib.rs", Edition2021) }
+   0.279783125s  INFO prepare_target{force=false package_id=cudarc v0.17.8 target="cudarc"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/cudarc-7b5f5fa8a8c350ae/lib-cudarc`
 
 Caused by:
     No such file or directory (os error 2)
@@ -127,8 +127,8 @@ Stack backtrace:
   16: std::rt::lang_start::<()>::{closure#0}
   17: std::rt::lang_start_internal
   18: _main
-   0.230487334s  INFO prepare_target{force=false package_id=cudarc v0.17.8 target="build-script-build"}: cargo::core::compiler::fingerprint: fingerprint error for cudarc v0.17.8/RunCustomBuild/TargetInner { ..: custom_build_target("build-script-build", "/Users/antonio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cudarc-0.17.8/build.rs", Edition2021) }
-   0.230490625s  INFO prepare_target{force=false package_id=cudarc v0.17.8 target="build-script-build"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/cudarc-229cab6f0ea58eae/run-build-script-build-script-build`
+   0.280056250s  INFO prepare_target{force=false package_id=cudarc v0.17.8 target="build-script-build"}: cargo::core::compiler::fingerprint: fingerprint error for cudarc v0.17.8/RunCustomBuild/TargetInner { ..: custom_build_target("build-script-build", "/Users/antonio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cudarc-0.17.8/build.rs", Edition2021) }
+   0.280060250s  INFO prepare_target{force=false package_id=cudarc v0.17.8 target="build-script-build"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/cudarc-229cab6f0ea58eae/run-build-script-build-script-build`
 
 Caused by:
     No such file or directory (os error 2)
@@ -155,8 +155,8 @@ Stack backtrace:
   18: std::rt::lang_start::<()>::{closure#0}
   19: std::rt::lang_start_internal
   20: _main
-   0.233720167s  INFO prepare_target{force=false package_id=float8 v0.4.2 target="float8"}: cargo::core::compiler::fingerprint: fingerprint error for float8 v0.4.2/Check { test: false }/TargetInner { ..: lib_target("float8", ["lib"], "/Users/antonio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/float8-0.4.2/src/lib.rs", Edition2021) }
-   0.233725584s  INFO prepare_target{force=false package_id=float8 v0.4.2 target="float8"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/float8-41e1afc01cc47df4/lib-float8`
+   0.284131167s  INFO prepare_target{force=false package_id=float8 v0.4.2 target="float8"}: cargo::core::compiler::fingerprint: fingerprint error for float8 v0.4.2/Check { test: false }/TargetInner { ..: lib_target("float8", ["lib"], "/Users/antonio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/float8-0.4.2/src/lib.rs", Edition2021) }
+   0.284139250s  INFO prepare_target{force=false package_id=float8 v0.4.2 target="float8"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/float8-41e1afc01cc47df4/lib-float8`
 
 Caused by:
     No such file or directory (os error 2)
@@ -181,8 +181,8 @@ Stack backtrace:
   16: std::rt::lang_start::<()>::{closure#0}
   17: std::rt::lang_start_internal
   18: _main
-   0.240842292s  INFO prepare_target{force=false package_id=ug-cuda v0.5.0 target="ug_cuda"}: cargo::core::compiler::fingerprint: fingerprint error for ug-cuda v0.5.0/Check { test: false }/TargetInner { ..: lib_target("ug_cuda", ["lib"], "/Users/antonio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ug-cuda-0.5.0/src/lib.rs", Edition2021) }
-   0.240848875s  INFO prepare_target{force=false package_id=ug-cuda v0.5.0 target="ug_cuda"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/ug-cuda-2887848385cafd43/lib-ug_cuda`
+   0.294636458s  INFO prepare_target{force=false package_id=ug-cuda v0.5.0 target="ug_cuda"}: cargo::core::compiler::fingerprint: fingerprint error for ug-cuda v0.5.0/Check { test: false }/TargetInner { ..: lib_target("ug_cuda", ["lib"], "/Users/antonio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ug-cuda-0.5.0/src/lib.rs", Edition2021) }
+   0.294651917s  INFO prepare_target{force=false package_id=ug-cuda v0.5.0 target="ug_cuda"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/ug-cuda-2887848385cafd43/lib-ug_cuda`
 
 Caused by:
     No such file or directory (os error 2)
@@ -207,8 +207,8 @@ Stack backtrace:
   16: std::rt::lang_start::<()>::{closure#0}
   17: std::rt::lang_start_internal
   18: _main
-   0.242975125s  INFO prepare_target{force=false package_id=candle-nn v0.9.2-alpha.1 (https://github.com/huggingface/candle?tag=0.9.2-alpha.1#d312da23) target="candle_nn"}: cargo::core::compiler::fingerprint: fingerprint error for candle-nn v0.9.2-alpha.1 (https://github.com/huggingface/candle?tag=0.9.2-alpha.1#d312da23)/Check { test: false }/TargetInner { name_inferred: true, ..: lib_target("candle_nn", ["lib"], "/Users/antonio/.cargo/git/checkouts/candle-5b4d092929d18d36/d312da2/candle-nn/src/lib.rs", Edition2021) }
-   0.242979750s  INFO prepare_target{force=false package_id=candle-nn v0.9.2-alpha.1 (https://github.com/huggingface/candle?tag=0.9.2-alpha.1#d312da23) target="candle_nn"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-nn-ceddeb2f7b30485d/lib-candle_nn`
+   0.297048292s  INFO prepare_target{force=false package_id=candle-nn v0.9.2-alpha.1 (https://github.com/huggingface/candle?tag=0.9.2-alpha.1#d312da23) target="candle_nn"}: cargo::core::compiler::fingerprint: fingerprint error for candle-nn v0.9.2-alpha.1 (https://github.com/huggingface/candle?tag=0.9.2-alpha.1#d312da23)/Check { test: false }/TargetInner { name_inferred: true, ..: lib_target("candle_nn", ["lib"], "/Users/antonio/.cargo/git/checkouts/candle-5b4d092929d18d36/d312da2/candle-nn/src/lib.rs", Edition2021) }
+   0.297054750s  INFO prepare_target{force=false package_id=candle-nn v0.9.2-alpha.1 (https://github.com/huggingface/candle?tag=0.9.2-alpha.1#d312da23) target="candle_nn"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-nn-ceddeb2f7b30485d/lib-candle_nn`
 
 Caused by:
     No such file or directory (os error 2)
@@ -232,8 +232,8 @@ Stack backtrace:
   15: std::rt::lang_start::<()>::{closure#0}
   16: std::rt::lang_start_internal
   17: _main
-   0.243311167s  INFO prepare_target{force=false package_id=candle-transformers v0.9.2-alpha.1 (https://github.com/huggingface/candle?tag=0.9.2-alpha.1#d312da23) target="candle_transformers"}: cargo::core::compiler::fingerprint: fingerprint error for candle-transformers v0.9.2-alpha.1 (https://github.com/huggingface/candle?tag=0.9.2-alpha.1#d312da23)/Check { test: false }/TargetInner { name_inferred: true, ..: lib_target("candle_transformers", ["lib"], "/Users/antonio/.cargo/git/checkouts/candle-5b4d092929d18d36/d312da2/candle-transformers/src/lib.rs", Edition2021) }
-   0.243317250s  INFO prepare_target{force=false package_id=candle-transformers v0.9.2-alpha.1 (https://github.com/huggingface/candle?tag=0.9.2-alpha.1#d312da23) target="candle_transformers"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-transformers-3add021f9b61ecf1/lib-candle_transformers`
+   0.297404000s  INFO prepare_target{force=false package_id=candle-transformers v0.9.2-alpha.1 (https://github.com/huggingface/candle?tag=0.9.2-alpha.1#d312da23) target="candle_transformers"}: cargo::core::compiler::fingerprint: fingerprint error for candle-transformers v0.9.2-alpha.1 (https://github.com/huggingface/candle?tag=0.9.2-alpha.1#d312da23)/Check { test: false }/TargetInner { name_inferred: true, ..: lib_target("candle_transformers", ["lib"], "/Users/antonio/.cargo/git/checkouts/candle-5b4d092929d18d36/d312da2/candle-transformers/src/lib.rs", Edition2021) }
+   0.297409042s  INFO prepare_target{force=false package_id=candle-transformers v0.9.2-alpha.1 (https://github.com/huggingface/candle?tag=0.9.2-alpha.1#d312da23) target="candle_transformers"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-transformers-3add021f9b61ecf1/lib-candle_transformers`
 
 Caused by:
     No such file or directory (os error 2)
@@ -257,8 +257,8 @@ Stack backtrace:
   15: std::rt::lang_start::<()>::{closure#0}
   16: std::rt::lang_start_internal
   17: _main
-   0.274969209s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="candle_semantic_router"}: cargo::core::compiler::fingerprint: fingerprint error for candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding)/Check { test: true }/TargetInner { ..: lib_target("candle_semantic_router", ["rlib", "staticlib", "cdylib"], "/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/src/lib.rs", Edition2021) }
-   0.274984417s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="candle_semantic_router"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-semantic-router-245e4c48f4dfd99f/test-lib-candle_semantic_router`
+   0.336637375s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="candle_semantic_router"}: cargo::core::compiler::fingerprint: fingerprint error for candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding)/Check { test: true }/TargetInner { ..: lib_target("candle_semantic_router", ["rlib", "staticlib", "cdylib"], "/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/src/lib.rs", Edition2021) }
+   0.336652250s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="candle_semantic_router"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-semantic-router-245e4c48f4dfd99f/test-lib-candle_semantic_router`
 
 Caused by:
     No such file or directory (os error 2)
@@ -281,8 +281,8 @@ Stack backtrace:
   14: std::rt::lang_start::<()>::{closure#0}
   15: std::rt::lang_start_internal
   16: _main
-   0.284037209s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="classification_output_demo"}: cargo::core::compiler::fingerprint: fingerprint error for candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding)/Check { test: true }/TargetInner { kind: "test", name: "classification_output_demo", benched: false, ..: with_path("/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/tests/classification_output_demo.rs", Edition2021) }
-   0.284044709s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="classification_output_demo"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-semantic-router-9b48d403dba7471b/test-integration-test-classification_output_demo`
+   0.346721792s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="classification_output_demo"}: cargo::core::compiler::fingerprint: fingerprint error for candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding)/Check { test: true }/TargetInner { kind: "test", name: "classification_output_demo", benched: false, ..: with_path("/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/tests/classification_output_demo.rs", Edition2021) }
+   0.346732208s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="classification_output_demo"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-semantic-router-9b48d403dba7471b/test-integration-test-classification_output_demo`
 
 Caused by:
     No such file or directory (os error 2)
@@ -305,8 +305,8 @@ Stack backtrace:
   14: std::rt::lang_start::<()>::{closure#0}
   15: std::rt::lang_start_internal
   16: _main
-   0.284922334s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="qwen3_classification_api_test"}: cargo::core::compiler::fingerprint: fingerprint error for candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding)/Check { test: true }/TargetInner { kind: "test", name: "qwen3_classification_api_test", benched: false, ..: with_path("/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/tests/qwen3_classification_api_test.rs", Edition2021) }
-   0.284927667s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="qwen3_classification_api_test"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-semantic-router-02932cad339f9de8/test-integration-test-qwen3_classification_api_test`
+   0.347632542s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="qwen3_classification_api_test"}: cargo::core::compiler::fingerprint: fingerprint error for candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding)/Check { test: true }/TargetInner { kind: "test", name: "qwen3_classification_api_test", benched: false, ..: with_path("/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/tests/qwen3_classification_api_test.rs", Edition2021) }
+   0.347637542s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="qwen3_classification_api_test"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-semantic-router-02932cad339f9de8/test-integration-test-qwen3_classification_api_test`
 
 Caused by:
     No such file or directory (os error 2)
@@ -329,8 +329,8 @@ Stack backtrace:
   14: std::rt::lang_start::<()>::{closure#0}
   15: std::rt::lang_start_internal
   16: _main
-   0.285726042s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="deberta_prompt_injection_example"}: cargo::core::compiler::fingerprint: fingerprint error for candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding)/Check { test: false }/TargetInner { kind: "example", name: "deberta_prompt_injection_example", tested: false, benched: false, ..: with_path("/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/../deploy/examples/candle-binding/deberta_prompt_injection_example.rs", Edition2021) }
-   0.285730917s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="deberta_prompt_injection_example"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-semantic-router-eb8bdc61fa529bc0/example-deberta_prompt_injection_example`
+   0.348509875s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="deberta_prompt_injection_example"}: cargo::core::compiler::fingerprint: fingerprint error for candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding)/Check { test: false }/TargetInner { kind: "example", name: "deberta_prompt_injection_example", tested: false, benched: false, ..: with_path("/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/../deploy/examples/candle-binding/deberta_prompt_injection_example.rs", Edition2021) }
+   0.348516417s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="deberta_prompt_injection_example"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-semantic-router-eb8bdc61fa529bc0/example-deberta_prompt_injection_example`
 
 Caused by:
     No such file or directory (os error 2)
@@ -353,8 +353,8 @@ Stack backtrace:
   14: std::rt::lang_start::<()>::{closure#0}
   15: std::rt::lang_start_internal
   16: _main
-   0.286492209s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="embedding_benchmark"}: cargo::core::compiler::fingerprint: fingerprint error for candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding)/Check { test: false }/TargetInner { kind: "example", name: "embedding_benchmark", tested: false, benched: false, ..: with_path("/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/examples/embedding_benchmark.rs", Edition2021) }
-   0.286496584s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="embedding_benchmark"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-semantic-router-1fff9813abb1f76f/example-embedding_benchmark`
+   0.349365917s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="embedding_benchmark"}: cargo::core::compiler::fingerprint: fingerprint error for candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding)/Check { test: false }/TargetInner { kind: "example", name: "embedding_benchmark", tested: false, benched: false, ..: with_path("/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/examples/embedding_benchmark.rs", Edition2021) }
+   0.349372333s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="embedding_benchmark"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-semantic-router-1fff9813abb1f76f/example-embedding_benchmark`
 
 Caused by:
     No such file or directory (os error 2)
@@ -377,8 +377,8 @@ Stack backtrace:
   14: std::rt::lang_start::<()>::{closure#0}
   15: std::rt::lang_start_internal
   16: _main
-   0.287340750s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="mmbert_2d_matryoshka_bench"}: cargo::core::compiler::fingerprint: fingerprint error for candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding)/Check { test: false }/TargetInner { kind: "example", name: "mmbert_2d_matryoshka_bench", tested: false, benched: false, ..: with_path("/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/examples/mmbert_2d_matryoshka_bench.rs", Edition2021) }
-   0.287350375s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="mmbert_2d_matryoshka_bench"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-semantic-router-d97939c7c570e29e/example-mmbert_2d_matryoshka_bench`
+   0.350259250s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="mmbert_2d_matryoshka_bench"}: cargo::core::compiler::fingerprint: fingerprint error for candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding)/Check { test: false }/TargetInner { kind: "example", name: "mmbert_2d_matryoshka_bench", tested: false, benched: false, ..: with_path("/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/examples/mmbert_2d_matryoshka_bench.rs", Edition2021) }
+   0.350264000s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="mmbert_2d_matryoshka_bench"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-semantic-router-d97939c7c570e29e/example-mmbert_2d_matryoshka_bench`
 
 Caused by:
     No such file or directory (os error 2)
@@ -401,8 +401,8 @@ Stack backtrace:
   14: std::rt::lang_start::<()>::{closure#0}
   15: std::rt::lang_start_internal
   16: _main
-   0.288232375s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="qwen3_example"}: cargo::core::compiler::fingerprint: fingerprint error for candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding)/Check { test: false }/TargetInner { kind: "example", name: "qwen3_example", tested: false, benched: false, ..: with_path("/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/../deploy/examples/candle-binding/qwen3_example.rs", Edition2021) }
-   0.288238334s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="qwen3_example"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-semantic-router-c9b6d5770c6e9379/example-qwen3_example`
+   0.351124958s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="qwen3_example"}: cargo::core::compiler::fingerprint: fingerprint error for candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding)/Check { test: false }/TargetInner { kind: "example", name: "qwen3_example", tested: false, benched: false, ..: with_path("/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/../deploy/examples/candle-binding/qwen3_example.rs", Edition2021) }
+   0.351129875s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="qwen3_example"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-semantic-router-c9b6d5770c6e9379/example-qwen3_example`
 
 Caused by:
     No such file or directory (os error 2)
@@ -425,8 +425,8 @@ Stack backtrace:
   14: std::rt::lang_start::<()>::{closure#0}
   15: std::rt::lang_start_internal
   16: _main
-   0.289027875s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="test_layer_early_exit"}: cargo::core::compiler::fingerprint: fingerprint error for candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding)/Check { test: false }/TargetInner { kind: "example", name: "test_layer_early_exit", tested: false, benched: false, ..: with_path("/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/examples/test_layer_early_exit.rs", Edition2021) }
-   0.289032750s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="test_layer_early_exit"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-semantic-router-e145694824ccb72f/example-test_layer_early_exit`
+   0.351941542s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="test_layer_early_exit"}: cargo::core::compiler::fingerprint: fingerprint error for candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding)/Check { test: false }/TargetInner { kind: "example", name: "test_layer_early_exit", tested: false, benched: false, ..: with_path("/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/examples/test_layer_early_exit.rs", Edition2021) }
+   0.351946208s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="test_layer_early_exit"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-semantic-router-e145694824ccb72f/example-test_layer_early_exit`
 
 Caused by:
     No such file or directory (os error 2)
@@ -449,8 +449,8 @@ Stack backtrace:
   14: std::rt::lang_start::<()>::{closure#0}
   15: std::rt::lang_start_internal
   16: _main
-   0.289771625s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="test_mmbert_lora"}: cargo::core::compiler::fingerprint: fingerprint error for candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding)/Check { test: false }/TargetInner { kind: "example", name: "test_mmbert_lora", tested: false, benched: false, ..: with_path("/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/examples/test_mmbert_lora.rs", Edition2021) }
-   0.289775959s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="test_mmbert_lora"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-semantic-router-8b91900a3ed104a0/example-test_mmbert_lora`
+   0.352803667s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="test_mmbert_lora"}: cargo::core::compiler::fingerprint: fingerprint error for candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding)/Check { test: false }/TargetInner { kind: "example", name: "test_mmbert_lora", tested: false, benched: false, ..: with_path("/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/examples/test_mmbert_lora.rs", Edition2021) }
+   0.352809083s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="test_mmbert_lora"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-semantic-router-8b91900a3ed104a0/example-test_mmbert_lora`
 
 Caused by:
     No such file or directory (os error 2)
@@ -473,8 +473,8 @@ Stack backtrace:
   14: std::rt::lang_start::<()>::{closure#0}
   15: std::rt::lang_start_internal
   16: _main
-   0.290603000s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="test_mmbert_real"}: cargo::core::compiler::fingerprint: fingerprint error for candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding)/Check { test: false }/TargetInner { kind: "example", name: "test_mmbert_real", tested: false, benched: false, ..: with_path("/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/examples/test_mmbert_real.rs", Edition2021) }
-   0.290608250s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="test_mmbert_real"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-semantic-router-c0b774d2f306dd3a/example-test_mmbert_real`
+   0.353647417s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="test_mmbert_real"}: cargo::core::compiler::fingerprint: fingerprint error for candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding)/Check { test: false }/TargetInner { kind: "example", name: "test_mmbert_real", tested: false, benched: false, ..: with_path("/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/examples/test_mmbert_real.rs", Edition2021) }
+   0.353652250s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="test_mmbert_real"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-semantic-router-c0b774d2f306dd3a/example-test_mmbert_real`
 
 Caused by:
     No such file or directory (os error 2)
@@ -497,8 +497,8 @@ Stack backtrace:
   14: std::rt::lang_start::<()>::{closure#0}
   15: std::rt::lang_start_internal
   16: _main
-   0.291421625s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="test_mmbert_variant"}: cargo::core::compiler::fingerprint: fingerprint error for candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding)/Check { test: false }/TargetInner { kind: "example", name: "test_mmbert_variant", tested: false, benched: false, ..: with_path("/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/examples/test_mmbert_variant.rs", Edition2021) }
-   0.291426625s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="test_mmbert_variant"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-semantic-router-5132e0c3ae709732/example-test_mmbert_variant`
+   0.354456833s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="test_mmbert_variant"}: cargo::core::compiler::fingerprint: fingerprint error for candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding)/Check { test: false }/TargetInner { kind: "example", name: "test_mmbert_variant", tested: false, benched: false, ..: with_path("/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/examples/test_mmbert_variant.rs", Edition2021) }
+   0.354461417s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="test_mmbert_variant"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-semantic-router-5132e0c3ae709732/example-test_mmbert_variant`
 
 Caused by:
     No such file or directory (os error 2)
@@ -521,8 +521,8 @@ Stack backtrace:
   14: std::rt::lang_start::<()>::{closure#0}
   15: std::rt::lang_start_internal
   16: _main
-   0.292209834s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="test_raw_confidence"}: cargo::core::compiler::fingerprint: fingerprint error for candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding)/Check { test: false }/TargetInner { kind: "example", name: "test_raw_confidence", tested: false, benched: false, ..: with_path("/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/../deploy/examples/candle-binding/test_raw_confidence.rs", Edition2021) }
-   0.292214584s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="test_raw_confidence"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-semantic-router-51b6489e28d91316/example-test_raw_confidence`
+   0.355249458s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="test_raw_confidence"}: cargo::core::compiler::fingerprint: fingerprint error for candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding)/Check { test: false }/TargetInner { kind: "example", name: "test_raw_confidence", tested: false, benched: false, ..: with_path("/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/../deploy/examples/candle-binding/test_raw_confidence.rs", Edition2021) }
+   0.355254417s  INFO prepare_target{force=false package_id=candle-semantic-router v0.4.0 (/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding) target="test_raw_confidence"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/antonio/projects/kubecon-eu-2026-agentic-routing/candle-binding/target/debug/.fingerprint/candle-semantic-router-51b6489e28d91316/example-test_raw_confidence`
 
 Caused by:
     No such file or directory (os error 2)
@@ -563,7 +563,7 @@ Caused by:
 
   --- stderr
 
-  thread 'main' (29192) panicked at /Users/antonio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cudarc-0.17.8/build.rs:116:13:
+  thread 'main' (34388) panicked at /Users/antonio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cudarc-0.17.8/build.rs:116:13:
   `nvcc --version` failed.
   Err(Os { code: 2, kind: NotFound, message: "No such file or directory" })
   stack backtrace:
@@ -591,7 +591,7 @@ Caused by:
 
   --- stderr
 
-  thread 'main' (29195) panicked at /Users/antonio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bindgen_cuda-0.1.6/src/lib.rs:503:18:
+  thread 'main' (34391) panicked at /Users/antonio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bindgen_cuda-0.1.6/src/lib.rs:503:18:
   `nvidia-smi` failed. Ensure that you have CUDA installed and that `nvidia-smi` is in your PATH.: Os { code: 2, kind: NotFound, message: "No such file or directory" }
   stack backtrace:
      0: __rustc::rust_begin_unwind

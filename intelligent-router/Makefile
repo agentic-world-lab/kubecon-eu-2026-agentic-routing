@@ -68,12 +68,12 @@ build-ml:
 		-t $(IMAGE_ML) \
 		../
 
-## Push the ML image to the registry as the canonical latest tag.
+## Push the ML image to the registry as the canonical latest tag (amd64 + arm64).
 ## Requires an active buildx builder: docker buildx create --use --name multiarch
 push:
-	@echo ">>> Pushing $(REGISTRY_IMAGE):$(REGISTRY_TAG) (with M-Vert Pro)"
+	@echo ">>> Pushing $(REGISTRY_IMAGE):$(REGISTRY_TAG) (with M-Vert Pro, linux/amd64+arm64)"
 	docker buildx build \
-		--platform linux/arm64 \
+		--platform linux/amd64,linux/arm64 \
 		--push \
 		-f Dockerfile.ml \
 		-t $(REGISTRY_IMAGE):$(REGISTRY_TAG) \

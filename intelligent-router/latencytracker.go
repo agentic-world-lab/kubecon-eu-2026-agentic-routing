@@ -2,54 +2,61 @@ package main
 
 import "sync"
 
-// emaAlpha is the smoothing factor for exponential moving average updates.
-// A value of 0.2 weights new observations at 20% and history at 80%.
-const emaAlpha = 0.2
+const slidingWindowSize = 10
 
-// LatencyTracker maintains a per-model exponential moving average of observed
-// request latency in milliseconds.  It is safe for concurrent use.
+// LatencyTracker maintains a per-model sliding window of the last N observed
+// request latencies in milliseconds. Snapshot() returns the arithmetic mean
+// of each model's history. It is safe for concurrent use.
 type LatencyTracker struct {
-	mu    sync.Mutex
-	avgMs map[string]float64
+	mu      sync.Mutex
+	history map[string][]float64
 }
 
 // NewLatencyTracker creates a new tracker pre-seeded with the given initial values.
 func NewLatencyTracker(initial map[string]float64) *LatencyTracker {
-	m := make(map[string]float64, len(initial))
+	h := make(map[string][]float64, len(initial))
 	for k, v := range initial {
-		m[k] = v
+		h[k] = []float64{v}
 	}
-	return &LatencyTracker{avgMs: m}
+	return &LatencyTracker{history: h}
 }
 
 // EnsureModel initialises a model entry with initialMs only if the model is
-// not already tracked.  Safe to call on every config hot-reload.
+// not already tracked. Safe to call on every config hot-reload.
 func (lt *LatencyTracker) EnsureModel(name string, initialMs float64) {
 	lt.mu.Lock()
 	defer lt.mu.Unlock()
-	if _, ok := lt.avgMs[name]; !ok {
-		lt.avgMs[name] = initialMs
+	if _, ok := lt.history[name]; !ok {
+		lt.history[name] = []float64{initialMs}
 	}
 }
 
-// Record updates the EMA for model using the observed latency in milliseconds.
+// Record appends a latency observation for model. Only the last slidingWindowSize
+// observations are retained.
 func (lt *LatencyTracker) Record(model string, ms float64) {
 	lt.mu.Lock()
 	defer lt.mu.Unlock()
-	if prev, ok := lt.avgMs[model]; ok {
-		lt.avgMs[model] = emaAlpha*ms + (1-emaAlpha)*prev
-	} else {
-		lt.avgMs[model] = ms
+	h := append(lt.history[model], ms)
+	if len(h) > slidingWindowSize {
+		h = h[len(h)-slidingWindowSize:]
 	}
+	lt.history[model] = h
 }
 
-// Snapshot returns a copy of the current latency averages for all tracked models.
+// Snapshot returns the arithmetic mean latency for all tracked models.
 func (lt *LatencyTracker) Snapshot() map[string]float64 {
 	lt.mu.Lock()
 	defer lt.mu.Unlock()
-	snap := make(map[string]float64, len(lt.avgMs))
-	for k, v := range lt.avgMs {
-		snap[k] = v
+	snap := make(map[string]float64, len(lt.history))
+	for k, vals := range lt.history {
+		if len(vals) == 0 {
+			continue
+		}
+		var sum float64
+		for _, v := range vals {
+			sum += v
+		}
+		snap[k] = sum / float64(len(vals))
 	}
 	return snap
 }

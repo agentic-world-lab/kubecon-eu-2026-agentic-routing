@@ -2,55 +2,35 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
+	"sort"
+	"strconv"
 	"strings"
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-
-	"gopkg.in/yaml.v2"
 )
 
-var intelligentRouterConfigGVR = schema.GroupVersionResource{
-	Group:    "vllm.ai",
+var llmBackendGVR = schema.GroupVersionResource{
+	Group:    "edgecloudlabs.edgecloudlabs.com",
 	Version:  "v1alpha1",
-	Resource: "intelligentrouterconfigs",
+	Resource: "llmbackends",
 }
 
-// getPodNamespace returns the namespace the pod is running in.
-// It reads /var/run/secrets/kubernetes.io/serviceaccount/namespace (in-cluster),
-// then falls back to the NAMESPACE env var, then to "default".
-func getPodNamespace() string {
-	data, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
-	if err == nil {
-		if ns := strings.TrimSpace(string(data)); ns != "" {
-			return ns
-		}
-	}
-	if ns := os.Getenv("NAMESPACE"); ns != "" {
-		return ns
-	}
-	return "default"
-}
-
-// startCRWatcher starts a goroutine that polls for IntelligentRouterConfig CRs
-// in the pod's own namespace every 10 seconds and hot-reloads the server config
-// on any change. It expects exactly one CR in the namespace; if multiple exist
-// it uses the first one and logs a warning.
-func startCRWatcher(ctx context.Context, srv *server) error {
-	namespace := getPodNamespace()
-
-	// Build Kubernetes config: try in-cluster first, fall back to kubeconfig.
+// startLLMBackendWatcher starts a goroutine that polls for LLMBackend CRs
+// across all namespaces every 10 seconds and hot-reloads the server config
+// when any backend's resourceVersion changes.
+func startLLMBackendWatcher(ctx context.Context, srv *server, optimizationTarget string) error {
 	k8sCfg, err := rest.InClusterConfig()
 	if err != nil {
-		log.Printf("[crwatcher] not running in-cluster (%v), falling back to kubeconfig", err)
+		log.Printf("[llmwatcher] not running in-cluster (%v), falling back to kubeconfig", err)
 		k8sCfg, err = clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
 			clientcmd.NewDefaultClientConfigLoadingRules(),
 			&clientcmd.ConfigOverrides{},
@@ -65,16 +45,16 @@ func startCRWatcher(ctx context.Context, srv *server) error {
 		return fmt.Errorf("failed to create dynamic client: %w", err)
 	}
 
-	var lastResourceVersion string
+	var lastFingerprint string
 
 	apply := func() {
-		rv, err := applyFirstCR(ctx, dynClient, namespace, &lastResourceVersion, srv)
+		fp, err := applyLLMBackends(ctx, dynClient, &lastFingerprint, srv, optimizationTarget)
 		if err != nil {
-			log.Printf("[crwatcher] reload failed: %v", err)
+			log.Printf("[llmwatcher] reload failed: %v", err)
 			return
 		}
-		if rv != "" {
-			lastResourceVersion = rv
+		if fp != "" {
+			lastFingerprint = fp
 		}
 	}
 
@@ -94,56 +74,49 @@ func startCRWatcher(ctx context.Context, srv *server) error {
 		}
 	}()
 
-	log.Printf("[crwatcher] watching IntelligentRouterConfig in namespace %s (poll every 10s)", namespace)
+	log.Printf("[llmwatcher] watching LLMBackend CRs across all namespaces (poll every 10s)")
 	return nil
 }
 
-// applyFirstCR lists all IntelligentRouterConfig CRs in the namespace, picks the
-// first one, and hot-reloads the server state if its resourceVersion changed.
-// Returns the resourceVersion of the CR used, or "" if unchanged or not found.
-func applyFirstCR(
+// applyLLMBackends lists all LLMBackend CRs cluster-wide, extracts evaluated
+// backends, and hot-reloads the server state if the set has changed.
+func applyLLMBackends(
 	ctx context.Context,
 	client dynamic.Interface,
-	namespace string,
-	lastRV *string,
+	lastFingerprint *string,
 	srv *server,
+	optimizationTarget string,
 ) (string, error) {
-	list, err := client.Resource(intelligentRouterConfigGVR).Namespace(namespace).List(ctx, metav1.ListOptions{})
+	list, err := client.Resource(llmBackendGVR).Namespace("").List(ctx, metav1.ListOptions{})
 	if err != nil {
-		return "", fmt.Errorf("list IntelligentRouterConfig in %s: %w", namespace, err)
+		return "", fmt.Errorf("list LLMBackend: %w", err)
 	}
 
-	if len(list.Items) == 0 {
-		log.Printf("[crwatcher] no IntelligentRouterConfig found in namespace %s — skipping reload", namespace)
+	var backends []LLMBackendData
+	var rvParts []string
+
+	for _, item := range list.Items {
+		b, rv, ok := parseLLMBackend(&item)
+		if !ok {
+			continue
+		}
+		backends = append(backends, b)
+		rvParts = append(rvParts, item.GetName()+"="+rv)
+	}
+
+	if len(backends) == 0 {
+		log.Printf("[llmwatcher] no evaluated LLMBackend CRs found — skipping reload")
 		return "", nil
 	}
 
-	if len(list.Items) > 1 {
-		log.Printf("[crwatcher] warning: %d IntelligentRouterConfig CRs found in %s, using %q",
-			len(list.Items), namespace, list.Items[0].GetName())
-	}
-
-	u := &list.Items[0]
-	rv := u.GetResourceVersion()
-	if rv == *lastRV {
+	// Build a fingerprint from sorted name=rv pairs to detect changes.
+	sort.Strings(rvParts)
+	fingerprint := strings.Join(rvParts, ",")
+	if fingerprint == *lastFingerprint {
 		return "", nil // unchanged
 	}
 
-	// Convert unstructured → JSON → YAML struct.
-	// The K8s dynamic client returns the object as JSON-compatible maps.
-	// gopkg.in/yaml.v2 can parse JSON (JSON is valid YAML 1.1), and our
-	// IntelligentRouterConfig struct uses camelCase yaml tags matching the CR.
-	jsonBytes, err := json.Marshal(u.Object)
-	if err != nil {
-		return "", fmt.Errorf("marshal unstructured: %w", err)
-	}
-
-	cr := &IntelligentRouterConfig{}
-	if err := yaml.Unmarshal(jsonBytes, cr); err != nil {
-		return "", fmt.Errorf("unmarshal IntelligentRouterConfig: %w", err)
-	}
-
-	cfg := convertCRToConfig(cr)
+	cfg := convertLLMBackendsToConfig(backends, optimizationTarget)
 
 	kc, err := NewKeywordClassifier(cfg.KeywordRules)
 	if err != nil {
@@ -152,22 +125,21 @@ func applyFirstCR(
 
 	var mlc *MLClassifier
 	if cfg.MLClassifier.Enabled {
-		var mlErr error
-		mlc, mlErr = NewMLClassifier(
+		mlc, err = NewMLClassifier(
 			cfg.MLClassifier.ModelPath,
 			cfg.MLClassifier.MappingPath,
 			cfg.MLClassifier.NumClasses,
 			cfg.MLClassifier.UseCPU,
 			cfg.MLClassifier.Threshold,
 		)
-		if mlErr != nil {
-			log.Printf("[crwatcher] ML classifier disabled: %v", mlErr)
+		if err != nil {
+			log.Printf("[llmwatcher] ML classifier disabled: %v", err)
+			mlc = nil
 		}
 	}
 
 	state := &routerState{config: cfg, classifier: kc, mlClassifier: mlc}
 
-	// Ensure latency tracker has entries for all models.
 	for modelName, m := range cfg.Models {
 		srv.latencyTracker.EnsureModel(modelName, m.InitialAverageLatencyMs)
 	}
@@ -177,8 +149,78 @@ func applyFirstCR(
 	for n := range cfg.Models {
 		modelNames = append(modelNames, n)
 	}
-	log.Printf("[crwatcher] loaded %q rv=%s default=%s models=%v keyword_rules=%d ml_enabled=%v",
-		u.GetName(), rv, cfg.DefaultModel, modelNames, len(cfg.KeywordRules), cfg.MLClassifier.Enabled)
+	log.Printf("[llmwatcher] loaded %d LLMBackend(s): models=%v default=%s target=%s",
+		len(backends), modelNames, cfg.DefaultModel, optimizationTarget)
 
-	return rv, nil
+	return fingerprint, nil
+}
+
+// parseLLMBackend extracts LLMBackendData from an unstructured LLMBackend CR.
+// Returns (data, resourceVersion, ok). ok is false if the backend is not evaluated.
+func parseLLMBackend(u *unstructured.Unstructured) (LLMBackendData, string, bool) {
+	rv := u.GetResourceVersion()
+
+	status, ok := u.Object["status"].(map[string]interface{})
+	if !ok {
+		return LLMBackendData{}, rv, false
+	}
+	phase, _ := status["phase"].(string)
+	if phase != "Evaluated" {
+		return LLMBackendData{}, rv, false
+	}
+	results, ok := status["results"].(map[string]interface{})
+	if !ok {
+		return LLMBackendData{}, rv, false
+	}
+
+	spec, _ := u.Object["spec"].(map[string]interface{})
+	modelName, _ := spec["model"].(string)
+	if modelName == "" {
+		modelName = u.GetName()
+	}
+
+	b := LLMBackendData{Name: modelName}
+
+	if v, ok := results["avgResponseTime"].(string); ok {
+		b.AvgResponseTime, _ = strconv.ParseFloat(v, 64)
+	}
+	if v, ok := results["tokensPerSecond"].(string); ok {
+		b.TokensPerSecond, _ = strconv.ParseFloat(v, 64)
+	}
+
+	if pricing, ok := results["pricing"].(map[string]interface{}); ok {
+		if v, ok := pricing["prompt"].(string); ok {
+			b.PromptCost, _ = strconv.ParseFloat(v, 64)
+		}
+		if v, ok := pricing["completion"].(string); ok {
+			b.CompletionCost, _ = strconv.ParseFloat(v, 64)
+		}
+	}
+
+	if catAcc, ok := results["categoryAccuracy"].(map[string]interface{}); ok {
+		b.CategoryAccuracy = make(map[string]float64, len(catAcc))
+		for cat, val := range catAcc {
+			if s, ok := val.(string); ok {
+				if f, err := strconv.ParseFloat(s, 64); err == nil {
+					b.CategoryAccuracy[cat] = f
+				}
+			}
+		}
+	}
+
+	return b, rv, true
+}
+
+// getPodNamespace returns the namespace the pod is running in.
+func getPodNamespace() string {
+	data, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
+	if err == nil {
+		if ns := strings.TrimSpace(string(data)); ns != "" {
+			return ns
+		}
+	}
+	if ns := os.Getenv("NAMESPACE"); ns != "" {
+		return ns
+	}
+	return "default"
 }

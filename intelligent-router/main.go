@@ -1,17 +1,13 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"flag"
-	"fmt"
 	"io"
 	"log"
 	"net"
 	"net/http"
-	"net/http/httputil"
-	"net/url"
 	"os"
 	"os/signal"
 	"strings"
@@ -41,23 +37,8 @@ const (
 // ── CLI flags ─────────────────────────────────────────────────────────────────
 
 var (
-	grpcPort       = flag.String("grpcport", ":18080", "gRPC listen address")
-	metricsPort    = flag.String("metricsport", ":9091", "Prometheus metrics listen address")
-	httpPort       = flag.String("httpport", "", "HTTP proxy listen address (e.g. :8090); empty disables the proxy")
-	agentGatewayURL = flag.String("agentgateway", "http://agentgateway-proxy.agentgateway-system", "AgentGateway URL the HTTP proxy forwards to")
-
-	// Unified CR config (new format: IntelligentRouterConfig).
-	crPath = flag.String("cr", "", "path to IntelligentRouterConfig CR YAML (new unified format)")
-
-	// Separate IntelligentPool + IntelligentRoute CRs.
-	poolPath  = flag.String("pool", "", "path to IntelligentPool CR YAML")
-	routePath = flag.String("route", "", "path to IntelligentRoute CR YAML")
-
-	// Legacy combined config (backward compatible).
-	configPath = flag.String("config", "config.yaml", "path to legacy combined router config YAML")
-
-	// Kubernetes CR watcher mode: auto-discovers any IntelligentRouterConfig in the pod's namespace.
-	crWatch = flag.Bool("cr-watch", false, "enable IntelligentRouterConfig CR watcher (auto-discovers namespace from pod service account)")
+	grpcPort    = flag.String("grpcport", ":18080", "gRPC listen address")
+	metricsPort = flag.String("metricsport", ":9091", "Prometheus metrics listen address")
 )
 
 // ── Prometheus metrics ────────────────────────────────────────────────────────
@@ -109,54 +90,17 @@ type routerState struct {
 	mlClassifier *MLClassifier // nil when CGO disabled or ml_classifier.enabled=false
 }
 
-// loadState builds a routerState from the given file paths.
-// Priority: pool+route > cr > config (legacy).
-func loadState(cfgFile, crFile, poolFile, routeFile string) (*routerState, error) {
-	var cfg *RouterConfig
-	var err error
-
-	if poolFile != "" && routeFile != "" {
-		cfg, err = LoadFromPoolAndRoute(poolFile, routeFile)
-		if err != nil {
-			return nil, fmt.Errorf("pool/route load: %w", err)
-		}
-		log.Printf("[config] loaded from IntelligentPool=%s + IntelligentRoute=%s", poolFile, routeFile)
-	} else if crFile != "" {
-		cfg, err = LoadFromCR(crFile)
-		if err != nil {
-			return nil, fmt.Errorf("CR load: %w", err)
-		}
-		log.Printf("[config] loaded from IntelligentRouterConfig=%s", crFile)
-	} else {
-		cfg, err = LoadConfig(cfgFile)
-		if err != nil {
-			return nil, fmt.Errorf("config load: %w", err)
-		}
-		log.Printf("[config] loaded from %s", cfgFile)
+// newEmptyConfig returns a minimal RouterConfig so the server can start
+// before any LLMBackend CRs are discovered.
+func newEmptyConfig() *RouterConfig {
+	return &RouterConfig{
+		Models:       make(map[string]ModelConfig),
+		Weights:      weightsForTarget(os.Getenv("OPTIMIZATION_TARGET")),
+		KeywordRules: defaultKeywordRules(),
+		DefaultModel: "",
+		TokenBudget:  TokenBudgetConfig{Enabled: true, Threshold: 500, Quota: 1000, WindowSeconds: 60},
+		MLClassifier: defaultMLClassifierConfig(),
 	}
-
-	kc, err := NewKeywordClassifier(cfg.KeywordRules)
-	if err != nil {
-		return nil, fmt.Errorf("classifier init: %w", err)
-	}
-
-	// Initialise ML classifier if configured.
-	var mlc *MLClassifier
-	if cfg.MLClassifier.Enabled {
-		mlc, err = NewMLClassifier(
-			cfg.MLClassifier.ModelPath,
-			cfg.MLClassifier.MappingPath,
-			cfg.MLClassifier.NumClasses,
-			cfg.MLClassifier.UseCPU,
-			cfg.MLClassifier.Threshold,
-		)
-		if err != nil {
-			log.Printf("[config] ML classifier disabled: %v", err)
-			mlc = nil
-		}
-	}
-
-	return &routerState{config: cfg, classifier: kc, mlClassifier: mlc}, nil
 }
 
 // ── ExtProc server ────────────────────────────────────────────────────────────
@@ -168,29 +112,23 @@ type server struct {
 	latencyTracker *LatencyTracker
 }
 
-func newServer(cfgFile, crFile, poolFile, routeFile string) (*server, error) {
-	state, err := loadState(cfgFile, crFile, poolFile, routeFile)
-	if err != nil {
-		return nil, err
-	}
+func newServer() *server {
+	cfg := newEmptyConfig()
 
-	// Seed the latency tracker with initial values from the config.
-	initial := make(map[string]float64, len(state.config.Models))
-	for name, m := range state.config.Models {
-		initial[name] = m.InitialAverageLatencyMs
-	}
-
-	window := time.Duration(state.config.TokenBudget.WindowSeconds) * time.Second
+	window := time.Duration(cfg.TokenBudget.WindowSeconds) * time.Second
 	if window <= 0 {
 		window = 60 * time.Second
 	}
 
+	// Start with an empty state; the LLMBackend watcher will populate it.
+	state := &routerState{config: cfg}
+
 	s := &server{
 		tokenStore:     NewTokenStore(window),
-		latencyTracker: NewLatencyTracker(initial),
+		latencyTracker: NewLatencyTracker(nil),
 	}
 	s.current.Store(state)
-	return s, nil
+	return s
 }
 
 // streamState holds all per-stream data accumulated across gRPC messages.
@@ -554,68 +492,6 @@ func estimate(text string) int64 {
 	return n
 }
 
-// ── Config hot-reload ─────────────────────────────────────────────────────────
-
-// watchConfig polls all config files every 5 seconds and atomically swaps
-// routerState on any change.
-func watchConfig(ctx context.Context, cfgFile, crFile, poolFile, routeFile string, srv *server) {
-	ticker := time.NewTicker(5 * time.Second)
-	defer ticker.Stop()
-
-	modTimes := make(map[string]time.Time)
-	for _, f := range []string{cfgFile, crFile, poolFile, routeFile} {
-		if f == "" {
-			continue
-		}
-		if info, err := os.Stat(f); err == nil {
-			modTimes[f] = info.ModTime()
-		}
-	}
-
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-ticker.C:
-			changed := false
-			for f := range modTimes {
-				info, err := os.Stat(f)
-				if err != nil {
-					continue
-				}
-				if info.ModTime().After(modTimes[f]) {
-					modTimes[f] = info.ModTime()
-					changed = true
-				}
-			}
-			if !changed {
-				continue
-			}
-			// Log which file(s) triggered the reload.
-			for f := range modTimes {
-				log.Printf("[config] change detected: %s", f)
-			}
-			state, err := loadState(cfgFile, crFile, poolFile, routeFile)
-			if err != nil {
-				log.Printf("[config] reload failed: %v", err)
-				continue
-			}
-			// Ensure latency tracker has entries for any new models.
-			for name, m := range state.config.Models {
-				srv.latencyTracker.EnsureModel(name, m.InitialAverageLatencyMs)
-			}
-			srv.current.Store(state)
-			cfg := state.config
-			modelNames := make([]string, 0, len(cfg.Models))
-			for n := range cfg.Models {
-				modelNames = append(modelNames, n)
-			}
-			log.Printf("[config] hot-reloaded: default_model=%s models=%v keyword_rules=%d",
-				cfg.DefaultModel, modelNames, len(cfg.KeywordRules))
-		}
-	}
-}
-
 // ── Health server ─────────────────────────────────────────────────────────────
 
 type healthServer struct{}
@@ -628,112 +504,26 @@ func (h *healthServer) Watch(_ *grpc_health_v1.HealthCheckRequest, srv grpc_heal
 	return status.Error(codes.Unimplemented, "Watch not implemented")
 }
 
-
-// ── HTTP Proxy ────────────────────────────────────────────────────────────────
-
-// startHTTPProxy starts an HTTP reverse proxy that:
-//  1. Reads the full request body.
-//  2. Classifies the domain using the same routing logic as the ExtProc server.
-//  3. Injects x-router-selected-model (and companion headers) into the upstream
-//     request before forwarding it to AgentGateway.
-//
-// This ensures the routing header is present at the time AgentGateway evaluates
-// HTTPRoute rules, so intelligent routing to the correct backend works without
-// the client having to set any header.
-func (s *server) startHTTPProxy(listenAddr, gatewayURL string) {
-	target, err := url.Parse(gatewayURL)
-	if err != nil {
-		log.Fatalf("[proxy] invalid agentgateway URL %q: %v", gatewayURL, err)
-	}
-
-	rp := &httputil.ReverseProxy{
-		Director: func(req *http.Request) {
-			req.URL.Scheme = target.Scheme
-			req.URL.Host = target.Host
-			req.Host = target.Host
-		},
-		ErrorHandler: func(w http.ResponseWriter, r *http.Request, err error) {
-			log.Printf("[proxy] upstream error: %v", err)
-			http.Error(w, "upstream error: "+err.Error(), http.StatusBadGateway)
-		},
-	}
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		body, err := io.ReadAll(r.Body)
-		if err != nil {
-			http.Error(w, "cannot read body", http.StatusInternalServerError)
-			return
-		}
-		r.Body = io.NopCloser(bytes.NewReader(body))
-
-		state := s.current.Load()
-		var pressure float64
-		if state.config.TokenBudget.Enabled {
-			apiKey := r.Header.Get("Authorization")
-			pressure = s.tokenStore.GetPressure(apiKey, state.config.TokenBudget)
-		}
-		latencyMs := s.latencyTracker.Snapshot()
-		selectedModel, domain, scores := route(body, state, latencyMs, pressure)
-		log.Printf("[proxy] domain=%s selected_model=%s path=%s", domain, selectedModel, r.URL.Path)
-
-		routingDecisionsTotal.WithLabelValues(selectedModel, domain).Inc()
-		for _, sc := range scores {
-			modelScoreGauge.WithLabelValues(sc.ModelName).Set(sc.FinalScore)
-		}
-
-		r.Header.Set(headerSelectedModel, selectedModel)
-		r.Header.Set(headerSelectedDomain, domain)
-		if scoresJSON, err := json.Marshal(scores); err == nil {
-			r.Header.Set(headerModelScores, string(scoresJSON))
-		}
-
-		// Content-Length must match the original body since we do not modify it.
-		r.ContentLength = int64(len(body))
-
-		rp.ServeHTTP(w, r)
-	})
-
-	log.Printf("[proxy] HTTP proxy on %s → %s", listenAddr, gatewayURL)
-	if err := http.ListenAndServe(listenAddr, mux); err != nil {
-		log.Fatalf("[proxy] HTTP proxy error: %v", err)
-	}
-}
-
 // ── Entry point ───────────────────────────────────────────────────────────────
 
 func main() {
 	flag.Parse()
 
-	switch {
-	case *crWatch:
-		log.Printf("Starting intelligent-router  mode=cr-watch  grpc=%s  metrics=%s",
-			*grpcPort, *metricsPort)
-	case *poolPath != "" && *routePath != "":
-		log.Printf("Starting intelligent-router  mode=CR  pool=%s  route=%s  grpc=%s  metrics=%s",
-			*poolPath, *routePath, *grpcPort, *metricsPort)
-	case *crPath != "":
-		log.Printf("Starting intelligent-router  mode=CR  cr=%s  grpc=%s  metrics=%s",
-			*crPath, *grpcPort, *metricsPort)
-	default:
-		log.Printf("Starting intelligent-router  mode=legacy  config=%s  grpc=%s  metrics=%s",
-			*configPath, *grpcPort, *metricsPort)
+	optimizationTarget := os.Getenv("OPTIMIZATION_TARGET")
+	if optimizationTarget == "" {
+		optimizationTarget = "accuracy"
 	}
 
-	srv, err := newServer(*configPath, *crPath, *poolPath, *routePath)
-	if err != nil {
-		log.Fatalf("failed to initialise server: %v", err)
-	}
+	log.Printf("Starting intelligent-router  grpc=%s  metrics=%s  optimization_target=%s",
+		*grpcPort, *metricsPort, optimizationTarget)
+
+	srv := newServer()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	if *crWatch {
-		if err := startCRWatcher(ctx, srv); err != nil {
-			log.Fatalf("failed to start CR watcher: %v", err)
-		}
-	} else {
-		go watchConfig(ctx, *configPath, *crPath, *poolPath, *routePath, srv)
+	if err := startLLMBackendWatcher(ctx, srv, optimizationTarget); err != nil {
+		log.Fatalf("failed to start LLMBackend watcher: %v", err)
 	}
 
 	go func() {
@@ -744,10 +534,6 @@ func main() {
 			log.Printf("metrics server error: %v", err)
 		}
 	}()
-
-	if *httpPort != "" {
-		go srv.startHTTPProxy(*httpPort, *agentGatewayURL)
-	}
 
 	lis, err := net.Listen("tcp", *grpcPort)
 	if err != nil {

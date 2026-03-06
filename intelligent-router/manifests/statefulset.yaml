@@ -1,7 +1,7 @@
 # StatefulSet for the intelligent-router ExtProc server.
 #
-# Config is loaded live from the IntelligentRouterConfig CR via the --cr-watch flag.
-# No ConfigMap volume mount needed — the router calls the Kubernetes API directly.
+# Config is built dynamically from LLMBackend CRs discovered across all namespaces.
+# No ConfigMap or IntelligentRouterConfig CR needed.
 #
 # The mmBERT-32K intent classifier model is downloaded at first startup by the
 # init container and stored on a PersistentVolumeClaim so subsequent restarts
@@ -10,7 +10,7 @@
 # Requires:
 #   - Secret "huggingface-api-key" with key "HF_TOKEN" in the namespace
 #   - RBAC from manifests/rbac.yaml (ServiceAccount + ClusterRole)
-#   - IntelligentRouterConfig CR from manifests/intelligent-router-config-cr.yaml
+#   - LLMBackend CRs with status.phase=Evaluated (any namespace)
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -132,7 +132,9 @@ spec:
           args:
             - "--grpcport=:18080"
             - "--metricsport=:9091"
-            - "--cr-watch"
+          env:
+            - name: OPTIMIZATION_TARGET
+              value: "accuracy"
           ports:
             - name: grpc
               containerPort: 18080
