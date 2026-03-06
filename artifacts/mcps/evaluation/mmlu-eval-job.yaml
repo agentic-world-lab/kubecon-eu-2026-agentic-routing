@@ -1,0 +1,22 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mmlu-eval-job
+spec:
+  template:
+    spec:
+      containers:
+      - name: evaluator
+        image: fjvicens/mmlu-pro-eval-job:0.1
+        imagePullPolicy: Always
+        env:
+        - name: EVAL_ENDPOINT
+          value: "http://10.95.161.240:8000/v1"
+        - name: EVAL_MODEL
+          value: "gpt-oss-120b"
+        - name: OPENAI_API_KEY
+          value: "dummy"
+        args: ["--samples-per-category", "5"]
+      restartPolicy: Never
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 300

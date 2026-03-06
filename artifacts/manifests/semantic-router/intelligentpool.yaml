@@ -1,0 +1,18 @@
+---
+apiVersion: vllm.ai/v1alpha1
+kind: IntelligentPool
+metadata:
+  name: domain-plugin-pool
+  namespace: default
+spec:
+  defaultModel: "gpt-oss-120b"
+  models:
+    - name: "gpt-oss-120b"
+      pricing:
+        inputTokenPrice: 0.00000015  # $0.15 per 1M - for simple legal queries
+        outputTokenPrice: 0.0000006  # $0.6 per 1M
+
+    - name: "gpt-4.1"
+      pricing:
+        inputTokenPrice: 0.0000025   # $2.5 per 1M - for complex legal analysis
+        outputTokenPrice: 0.00001    # $10 per 1M

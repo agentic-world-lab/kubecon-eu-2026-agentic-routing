@@ -1,0 +1,16 @@
+{
+  "biology": "gpt-4.1",
+  "business": "gpt-4.1",
+  "chemistry": "gpt-4.1",
+  "computer_science": "gpt-3.5-turbo",
+  "economics": "gpt-4.1",
+  "engineering": "gpt-3.5-turbo",
+  "health": "gpt-3.5-turbo",
+  "history": "gpt-4.1",
+  "law": "gpt-4.1",
+  "math": "gpt-4.1",
+  "other": "gpt-4.1",
+  "philosophy": "gpt-4.1",
+  "physics": "gpt-4.1",
+  "psychology": "gpt-3.5-turbo"
+}

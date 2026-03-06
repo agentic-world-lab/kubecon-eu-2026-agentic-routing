@@ -1,0 +1,27 @@
+apiVersion: kagent.dev/v1alpha1
+kind: MCPServer
+metadata:
+  annotations:
+    kmcp.dev/description: MCP server for fetching token pricing from OpenRouter API
+    kmcp.dev/project-name: openrouter-pricing-mcp
+  labels:
+    app.kubernetes.io/component: mcp-server
+    app.kubernetes.io/instance: openrouter-pricing-mcp
+    app.kubernetes.io/managed-by: kmcp
+    app.kubernetes.io/name: openrouter-pricing-mcp
+    app.kubernetes.io/part-of: kmcp
+    kmcp.dev/framework: fastmcp-python
+    kmcp.dev/version: 0.1.1
+  name: openrouter-pricing-mcp
+  namespace: kagent
+spec:
+  deployment:
+    args:
+    - src/main.py
+    cmd: python
+    image: fjvicens/openrouter-pricing-mcp:0.1.2
+    port: 3000
+    replicas: 1
+  stdioTransport: {}
+  timeout: 30s
+  transportType: stdio

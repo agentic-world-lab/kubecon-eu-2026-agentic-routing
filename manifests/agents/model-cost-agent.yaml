@@ -1,0 +1,31 @@
+apiVersion: kagent.dev/v1alpha2
+kind: Agent
+metadata:
+  name: model-cost-agent
+  namespace: kagent
+spec:
+  description: Assistant that can check the model costs from openrouter api
+  type: Declarative
+  declarative:
+    modelConfig: default-model-config
+    stream: true
+    systemMessage: |
+      Instructions:
+      * Use the 'openrouter-pricing-mcp' to answer questions about AI model costs.
+      * Never expose internal reasoning.
+      * Never describe tool planning.
+      * Only return the final structured answer.
+
+      Output:
+      * The response MUST be in json. 
+        * For model pricing: Example: '{  "model": "...", "pricing": [{"prompt": "...", "completion": "..."}]}'
+
+    tools:
+    - mcpServer:
+        apiGroup: kagent.dev
+        kind: MCPServer
+        name: openrouter-pricing-mcp
+        namespace: kagent
+        toolNames:
+        - get_model_pricing
+      type: McpServer

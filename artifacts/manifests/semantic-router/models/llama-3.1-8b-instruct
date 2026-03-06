@@ -1,0 +1,60 @@
+==================================================
+Model: meta/llama-3.1-8b-instruct
+Approach: Chain-of-Thought
+Overall Accuracy: 0.3571
+Total Questions: 70
+Successful Queries: 70
+Failed Queries: 0
+Average Response Time: 11.09s
+==================================================
+
+Category Accuracy:
+  history: 0.8000
+  math: 0.8000
+  biology: 0.6000
+  law: 0.4000
+  psychology: 0.4000
+  health: 0.4000
+  physics: 0.4000
+  philosophy: 0.4000
+  chemistry: 0.2000
+  other: 0.2000
+  computer science: 0.2000
+  engineering: 0.2000
+  business: 0.0000
+  economics: 0.0000
+
+
+{
+  "overall_accuracy": 0.35714285714285715,
+  "category_accuracy": {
+    "business": 0.0,
+    "law": 0.4,
+    "psychology": 0.4,
+    "biology": 0.6,
+    "chemistry": 0.2,
+    "history": 0.8,
+    "other": 0.2,
+    "health": 0.4,
+    "economics": 0.0,
+    "math": 0.8,
+    "physics": 0.4,
+    "computer science": 0.2,
+    "philosophy": 0.4,
+    "engineering": 0.2
+  },
+  "avg_response_time": 11.088538912364415,
+  "total_questions": 70,
+  "successful_queries": 70,
+  "failed_queries": 0
+}
+
+{
+  "model": "meta/llama-3.1-8b-instruct",
+  "approach": "Chain-of-Thought",
+  "overall_accuracy": 0.35714285714285715,
+  "total_questions": 70,
+  "successful_queries": 70,
+  "failed_queries": 0,
+  "avg_response_time": 11.088538912364415
+}

@@ -1,0 +1,30 @@
+apiVersion: kagent.dev/v1alpha1
+kind: MCPServer
+metadata:
+  annotations:
+    kmcp.dev/description: MCP server for fetching electricity prices in Spain via
+      ESIOS API
+    kmcp.dev/project-name: spain-electricity-cost-mcp
+  labels:
+    app.kubernetes.io/component: mcp-server
+    app.kubernetes.io/instance: spain-electricity-cost-mcp
+    app.kubernetes.io/managed-by: kmcp
+    app.kubernetes.io/name: spain-electricity-cost-mcp
+    app.kubernetes.io/part-of: kmcp
+    kmcp.dev/framework: fastmcp-python
+    kmcp.dev/version: 0.1.3
+  name: spain-electricity-cost-mcp
+  namespace: kagent
+spec:
+  deployment:
+    args:
+    - src/main.py
+    cmd: python
+    env:
+      ESIOS_API_KEY: request_your_personal_token_sending_email_to_consultasios@ree.es
+    image: fjvicens/spain-electricity-cost-mcp:0.1.3
+    port: 3000
+    replicas: 1
+  stdioTransport: {}
+  timeout: 30s
+  transportType: stdio
