@@ -1,0 +1,33 @@
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayPolicy
+metadata:
+  name: access-logging
+  namespace: agentgateway-system
+spec:
+  # Target the Gateway to enable access logging
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: agentgateway-proxy
+  # Configure access logging to debug JWT claims
+  frontend:
+    accessLog:
+      attributes:
+        add:
+        # Log the Authorization header (shows Bearer token)
+        - name: selected_model_header
+          expression: 'request.headers["x-router-selected-model"]'
+        # Log JWT subject claim
+        # - name: jwt_sub
+        #   expression: 'default(jwt.sub, "missing")'
+        # # Log JWT preferred_username claim
+        # - name: jwt_preferred_username
+        #   expression: 'default(jwt.preferred_username, "missing")'
+        # # Log all JWT claims as JSON for debugging
+        # - name: jwt_claims
+        #   expression: 'toJson(jwt)'
+        # # Log request method and path for context
+        # - name: http_method
+        #   expression: 'request.method'
+        # - name: http_path
+        #   expression: 'request.path'

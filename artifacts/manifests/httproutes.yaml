@@ -11,20 +11,30 @@ spec:
   - matches:
     - headers:
       - type: Exact
-        name: x-route-picker
-        value: cpu
+        name: x-router-selected-model
+        value: "gpt-4.1"
     backendRefs:
-    - name: cpu-models
+    - name: gpt-4-1
       namespace: agentgateway-system
       group: agentgateway.dev
       kind: AgentgatewayBackend
   - matches:
     - headers:
       - type: Exact
-        name: x-route-picker
-        value: gpu
+        name: x-router-selected-model
+        value: "gpt-5-mini"
     backendRefs:
-    - name: gpu-models
+    - name: gpt-5-mini
+      namespace: agentgateway-system
+      group: agentgateway.dev
+      kind: AgentgatewayBackend
+  - matches:
+    - headers:
+      - type: Exact
+        name: x-router-selected-model
+        value: "gpt-4.1-mini"
+    backendRefs:
+    - name: gpt-4-1-mini
       namespace: agentgateway-system
       group: agentgateway.dev
       kind: AgentgatewayBackend

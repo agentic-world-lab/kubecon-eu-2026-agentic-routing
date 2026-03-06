@@ -1,0 +1,50 @@
+How AgentGateway actually works
+AgentGateway does NOT await all ExtProc phases before route selection. Instead:
+
+It sends RequestHeaders to ExtProc
+It waits for the header response, then immediately does route selection based on those headers
+Only then does it send RequestBody to ExtProc
+This means header mutations in the RequestBody phase response are too late — the route has already been selected.
+
+How PR #1420 solves this: "Deferred Header Response" pattern
+The semantic-router uses a clever trick:
+
+Step	Our implementation (broken)	PR #1420 (working)
+RequestHeaders arrives	Immediately respond with empty CommonResponse	Do NOT respond — store response in DeferredHeaderResponse
+Intermediate RequestBody chunks	Accumulate body, respond each time	Accumulate body, continue (send nothing)
+Final RequestBody (EndOfStream: true)	Classify, inject header in body response	Classify, update the deferred header response with routing header, then send header response first, then send body response
+The key insight: by withholding the header response, AgentGateway blocks waiting for it. When the ExtProc finally sends the header response (after body classification), it includes the routing header. AgentGateway then uses that header for route selection.
+
+Sequence diagrams
+Our broken flow:
+
+
+Client → AgentGateway → ExtProc
+                          RequestHeaders →
+                        ← HeaderResponse (empty, no routing header)
+         route selection → NO MATCH → 404 ✗
+                          RequestBody →
+                        ← BodyResponse (with x-router-selected-model)
+                          ↑ too late, route already decided
+PR #1420 working flow:
+
+
+Client → AgentGateway → ExtProc
+                          RequestHeaders →
+                          (no response — ExtProc holds it)
+                          RequestBody chunk 1 →
+                          (no response — accumulating)
+                          RequestBody final (EndOfStream) →
+                          (classify body, decide model)
+                        ← HeaderResponse (with x-router-selected-model) ← sent first
+         route selection → MATCH → gpt-4.1 ✓
+                        ← BodyResponse (StreamedResponse with body) ← sent second
+         forward to upstream
+Additional differences from PR #1420
+BodyMutation_StreamedResponse is required for ALL body mutations in AgentGateway mode (both request and response). Plain BodyMutation_Body doesn't work.
+
+ResponseHeaders ModeOverride: PR #1420 sets ResponseBodyMode: BUFFERED for non-streaming responses so response body chunks are accumulated properly.
+
+ClearRouteCache: Explicitly set to false in AgentGateway mode — it's not needed because the deferred header pattern ensures route selection sees the correct header.
+
+Response body accumulation: For non-streaming responses, intermediate response body chunks are suppressed (empty StreamedResponse) and accumulated. The final chunk sends the full response.

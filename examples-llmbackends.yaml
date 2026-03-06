@@ -1,0 +1,155 @@
+apiVersion: v1
+items:
+- apiVersion: edgecloudlabs.edgecloudlabs.com/v1alpha1
+  kind: LLMBackend
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"edgecloudlabs.edgecloudlabs.com/v1alpha1","kind":"LLMBackend","metadata":{"annotations":{},"name":"gpt-3.5-turbo-public","namespace":"default"},"spec":{"apiKeySecretRef":{"name":"openai-secret"},"deployment":"remote","model":"gpt-3.5-turbo","triggerEvaluation":true}}
+    creationTimestamp: "2026-03-03T21:11:30Z"
+    generation: 1
+    name: gpt-3.5-turbo-public
+    namespace: default
+    resourceVersion: "5231650"
+    uid: b6c0cb25-8bf8-42f9-a90f-27b5bb06e598
+  spec:
+    apiKeySecretRef:
+      name: openai-secret
+    deployment: remote
+    evaluationImage: fjvicens/mmlu-pro-eval-job:0.2
+    model: gpt-3.5-turbo
+    triggerEvaluation: true
+  status:
+    backendName: gpt-3.5-turbo
+    conditions:
+    - lastTransitionTime: "2026-03-03T21:12:27Z"
+      message: Evaluation completed successfully
+      reason: EvaluationComplete
+      status: "True"
+      type: Ready
+    jobName: mmlu-gpt-3.5-turbo-public
+    phase: Evaluated
+    results:
+      avgResponseTime: "0.6834"
+      categoryAccuracy:
+        biology: "0.6000"
+        business: "0.4000"
+        chemistry: "0.4000"
+        computer science: "0.6000"
+        economics: "0.2000"
+        engineering: "0.6000"
+        health: "1.0000"
+        history: "0.4000"
+        law: "0.4000"
+        math: "0.2000"
+        other: "0.2000"
+        philosophy: "0.0000"
+        physics: "0.2000"
+        psychology: "0.6000"
+      overallAccuracy: "0.4143"
+      tokensPerSecond: "20.59"
+      pricing:
+        prompt: "0.50"
+        completion: "1.50"
+- apiVersion: edgecloudlabs.edgecloudlabs.com/v1alpha1
+  kind: LLMBackend
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"edgecloudlabs.edgecloudlabs.com/v1alpha1","kind":"LLMBackend","metadata":{"annotations":{},"name":"gpt-4.1-public","namespace":"default"},"spec":{"apiKeySecretRef":{"name":"openai-secret"},"deployment":"remote","model":"gpt-4.1","triggerEvaluation":true}}
+    creationTimestamp: "2026-03-03T22:06:12Z"
+    generation: 1
+    name: gpt-4.1-public
+    namespace: default
+    resourceVersion: "5241146"
+    uid: 05bcb916-424c-4f9e-b7b3-4a30b13c140a
+  spec:
+    apiKeySecretRef:
+      name: openai-secret
+    deployment: remote
+    evaluationImage: fjvicens/mmlu-pro-eval-job:0.2
+    model: gpt-4.1
+  status:
+    backendName: gpt-4.1
+    conditions:
+    - lastTransitionTime: "2026-03-03T22:12:13Z"
+      message: Evaluation completed successfully
+      reason: EvaluationComplete
+      status: "True"
+      type: Ready
+    jobName: mmlu-gpt-4.1-public
+    phase: Evaluated
+    results:
+      avgResponseTime: "5.0142"
+      categoryAccuracy:
+        biology: "1.0000"
+        business: "0.6000"
+        chemistry: "0.6000"
+        computer science: "0.4000"
+        economics: "0.8000"
+        engineering: "0.4000"
+        health: "0.6000"
+        history: "1.0000"
+        law: "0.8000"
+        math: "0.6000"
+        other: "0.6000"
+        philosophy: "0.8000"
+        physics: "0.6000"
+        psychology: "0.6000"
+      overallAccuracy: "0.6714"
+      tokensPerSecond: "44.05"
+      pricing:
+        prompt: "5.00"
+        completion: "15.00"
+- apiVersion: edgecloudlabs.edgecloudlabs.com/v1alpha1
+  kind: LLMBackend
+  metadata:
+    creationTimestamp: "2026-03-05T13:21:51Z"
+    generation: 1
+    name: gpt-oss-120b-local
+    namespace: default
+    resourceVersion: "5615570"
+    uid: 8e2fe895-96f6-4d21-a674-480be95b5f62
+  spec:
+    deployment: local
+    endpoint: http://10.95.161.240:8000/v1
+    evaluationImage: fjvicens/mmlu-pro-eval-job:0.2
+    model: gpt-oss-120b
+  status:
+    backendName: gpt-oss-120b
+    conditions:
+    - lastTransitionTime: "2026-03-05T13:24:42Z"
+      message: Evaluation completed successfully
+      reason: EvaluationComplete
+      status: "True"
+      type: Ready
+    jobName: mmlu-gpt-oss-120b-local
+    phase: Evaluated
+    results:
+      avgResponseTime: "2.2824"
+      categoryAccuracy:
+        biology: "0.8000"
+        business: "0.6000"
+        chemistry: "1.0000"
+        computer science: "0.6000"
+        economics: "0.8000"
+        engineering: "0.6000"
+        health: "0.8000"
+        history: "0.8000"
+        law: "0.6000"
+        math: "1.0000"
+        other: "0.8000"
+        philosophy: "0.6000"
+        physics: "0.6000"
+        psychology: "0.4000"
+      overallAccuracy: "0.7143"
+      tokensPerSecond: "198.76"
+      pricing:
+        prompt: "1.00"
+        completion: "12.00"
+      
+kind: List
+metadata:
+  resourceVersion: ""
+
+

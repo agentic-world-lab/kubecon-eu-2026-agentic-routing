@@ -1,0 +1,52 @@
+# Service exposing the intelligent-router gRPC and metrics ports.
+#
+# NodePort values (30080, 30091) match the extraPortMappings in kind-cluster.yaml,
+# so you can reach the server on localhost:18080 and localhost:9091 directly
+# without kubectl port-forward when using the kind cluster.
+#
+# appProtocol: kubernetes.io/h2c is required so that AgentGateway (kgateway)
+# knows the gRPC service speaks HTTP/2 cleartext (no TLS) and can set up the
+# correct connection to the ExtProc server.
+apiVersion: v1
+kind: Service
+metadata:
+  name: intelligent-router
+  namespace: intelligent-router-system
+  labels:
+    app.kubernetes.io/name: intelligent-router
+spec:
+  type: NodePort
+  selector:
+    app: intelligent-router
+  ports:
+    - name: grpc
+      port: 18080
+      targetPort: 18080
+      nodePort: 30080
+      protocol: TCP
+      appProtocol: kubernetes.io/h2c
+    - name: metrics
+      port: 9091
+      targetPort: 9091
+      nodePort: 30091
+      protocol: TCP
+---
+# Headless Service required by the StatefulSet (spec.serviceName).
+# Provides stable DNS for each pod: intelligent-router-0.intelligent-router-headless.<ns>.svc.cluster.local
+# Not used for external traffic -- use the NodePort Service above for that.
+apiVersion: v1
+kind: Service
+metadata:
+  name: intelligent-router-headless
+  namespace: intelligent-router-system
+  labels:
+    app.kubernetes.io/name: intelligent-router
+spec:
+  clusterIP: None
+  selector:
+    app: intelligent-router
+  ports:
+    - name: grpc
+      port: 18080
+      targetPort: 18080
+      protocol: TCP

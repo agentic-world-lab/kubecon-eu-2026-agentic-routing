@@ -9,9 +9,9 @@ spec:
       kind: Gateway
       name: agentgateway-proxy
   traffic:
-    phase: PreRouting 
+    phase: PreRouting
     extProc:
       backendRef:
-        name: ext-proc-grpc
-        namespace: agentgateway-system
+        name: intelligent-router
+        namespace: intelligent-router-system
         port: 18080
