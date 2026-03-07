@@ -118,19 +118,21 @@ kubectl create secret generic huggingface-api-key \
 Apply resources in dependency order:
 
 ```bash
-# Intelligent-router CRD, RBAC, CR config, and workload
+# LLMBackend CRD and sample backends
+kubectl apply -f manifests/crd-llmbackend.yaml
+kubectl apply -f lab-llmbackends.yaml
+
+# Intelligent-router namespace, RBAC, service, and workload
 kubectl apply -f manifests/namespace.yaml
-kubectl apply -f manifests/crd-intelligent-router-config.yaml
-kubectl apply -f intelligent-router/manifests/rbac.yaml
-kubectl apply -f manifests/intelligent-router-config-cr.yaml
-kubectl apply -f manifests/intelligent-router-service.yaml
-kubectl apply -f intelligent-router/manifests/statefulset.yaml
+kubectl apply -f artifacts/intelligent-router/manifests/rbac.yaml
+kubectl apply -f artifacts/intelligent-router/manifests/service.yaml
+kubectl apply -f artifacts/intelligent-router/manifests/statefulset.yaml
 
 # AgentGateway resources
-kubectl apply -f manifests/gateway.yaml
-kubectl apply -f manifests/agentgatewaybackends.yaml
-kubectl apply -f manifests/agentgatewaypolicy.yaml
-kubectl apply -f manifests/httproutes.yaml
+kubectl apply -f manifests/agentgateway/gateway.yaml
+kubectl apply -f artifacts/manifests/agentgatewaybackends.yaml
+kubectl apply -f artifacts/manifests/agentgatewaypolicy.yaml
+kubectl apply -f artifacts/manifests/httproutes.yaml
 ```
 
 ---
@@ -308,15 +310,15 @@ curl -s http://localhost:9091/metrics | grep intelligent_router_decisions_total
 
 ```bash
 # Remove lab manifests
-kubectl delete -f manifests/httproutes.yaml
-kubectl delete -f manifests/agentgatewaypolicy.yaml
-kubectl delete -f manifests/agentgatewaybackends.yaml
-kubectl delete -f manifests/gateway.yaml
-kubectl delete -f intelligent-router/manifests/statefulset.yaml
-kubectl delete -f manifests/intelligent-router-service.yaml
-kubectl delete -f manifests/intelligent-router-config-cr.yaml
-kubectl delete -f intelligent-router/manifests/rbac.yaml
-kubectl delete -f manifests/crd-intelligent-router-config.yaml
+kubectl delete -f artifacts/manifests/httproutes.yaml
+kubectl delete -f artifacts/manifests/agentgatewaypolicy.yaml
+kubectl delete -f artifacts/manifests/agentgatewaybackends.yaml
+kubectl delete -f manifests/agentgateway/gateway.yaml
+kubectl delete -f artifacts/intelligent-router/manifests/statefulset.yaml
+kubectl delete -f artifacts/intelligent-router/manifests/service.yaml
+kubectl delete -f artifacts/intelligent-router/manifests/rbac.yaml
+kubectl delete -f lab-llmbackends.yaml
+kubectl delete -f manifests/crd-llmbackend.yaml
 kubectl delete -f manifests/namespace.yaml
 kubectl delete secret openai-secret -n agentgateway-system
 
