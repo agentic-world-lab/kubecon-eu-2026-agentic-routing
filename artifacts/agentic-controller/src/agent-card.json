@@ -1,0 +1,19 @@
+{
+  "name": "backend-evaluator-agent",
+  "description": "Orchestrates LLM backend evaluation lifecycle: creates backends, triggers evaluations, collects results, and enriches with pricing and energy cost data via A2A",
+  "url": "localhost:8080",
+  "version": "1.0.0",
+  "capabilities": {
+    "streaming": true
+  },
+  "defaultInputModes": ["text"],
+  "defaultOutputModes": ["text"],
+  "skills": [
+    {
+      "id": "evaluate-backend",
+      "name": "Evaluate LLM Backend",
+      "description": "Manages the full lifecycle of an LLM backend evaluation including pricing and energy cost enrichment",
+      "tags": ["evaluation", "llm", "orchestrator"]
+    }
+  ]
+}

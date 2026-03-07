@@ -155,15 +155,15 @@ kubectl apply -f manifests/agent-watcher/
 ## Step 7 — Install the Backend Evaluation Operator
 
 ```bash
-kubectl apply -f manifests/backend-evaluator-controller/install.yaml
+kubectl apply -f manifests/model-agentic-controller/install.yaml
 ```
 
 ## Step 8 — Deploy the Intelligent Router
 
 ```bash
 # Intelligent-router CRD, RBAC, CR config, and workload
-kubectl apply -f manifests/intelligent-router/crd-intelligent-router-config.yaml
 kubectl apply -f manifests/namespace.yaml
+kubectl apply -f manifests/intelligent-router/crd-intelligent-router-config.yaml
 kubectl apply -f manifests/intelligent-router/rbac.yaml
 kubectl apply -f manifests/intelligent-router/service.yaml
 kubectl apply -f manifests/intelligent-router/statefulset.yaml

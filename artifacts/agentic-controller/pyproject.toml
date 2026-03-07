@@ -1,0 +1,11 @@
+[project]
+name = "backend-evaluator-agent"
+version = "1.0.0"
+description = "Backend Evaluator Agent - A2A orchestrator for LLM backend evaluation lifecycle"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+  "google-adk>=1.22.1",
+  "kagent-adk",
+  "requests>=2.31.0",
+]
