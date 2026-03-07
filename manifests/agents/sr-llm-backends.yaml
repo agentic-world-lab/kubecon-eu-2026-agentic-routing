@@ -48,7 +48,6 @@ spec:
         apiGroup: kagent.dev
         kind: RemoteMCPServer
         name: kagent-tool-server
-        namespace: kagent
         toolNames:
         - k8s_get_resources
         - k8s_get_resource_yaml

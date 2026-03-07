@@ -92,7 +92,6 @@ spec:
         apiGroup: kagent.dev
         kind: RemoteMCPServer
         name: kagent-tool-server
-        namespace: kagent
         toolNames:
         - k8s_check_service_connectivity
         - k8s_patch_resource

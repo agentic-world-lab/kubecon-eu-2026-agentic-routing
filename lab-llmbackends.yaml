@@ -29,9 +29,6 @@ status:
       philosophy: "0.7000"
       physics: "0.7500"
       psychology: "0.7500"
-    pricing:
-      prompt: "5.00"
-      completion: "15.00"
 ---
 apiVersion: edgecloudlabs.edgecloudlabs.com/v1alpha1
 kind: LLMBackend
@@ -64,9 +61,6 @@ status:
       philosophy: "0.5500"
       physics: "0.9500"
       psychology: "0.5500"
-    pricing:
-      prompt: "3.00"
-      completion: "10.00"
 ---
 apiVersion: edgecloudlabs.edgecloudlabs.com/v1alpha1
 kind: LLMBackend
@@ -99,6 +93,3 @@ status:
       philosophy: "0.4000"
       physics: "0.4500"
       psychology: "0.4000"
-    pricing:
-      prompt: "0.50"
-      completion: "1.50"

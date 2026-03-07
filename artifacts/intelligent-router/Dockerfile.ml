@@ -30,9 +30,9 @@ FROM golang:bookworm AS go-builder
 
 WORKDIR /app/intelligent-router
 
-COPY candle-binding/go.mod candle-binding/semantic-router.go /app/candle-binding/
+COPY candle-binding/go.mod candle-binding/semantic-router.go ./candle-binding/
 COPY --from=rust-builder /app/candle-binding/target/release/libcandle_semantic_router.so \
-    /app/candle-binding/target/release/libcandle_semantic_router.so
+    ./candle-binding/target/release/libcandle_semantic_router.so
 
 COPY go.mod go.sum ./
 RUN GOFLAGS="-mod=mod" go mod download
