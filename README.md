@@ -200,7 +200,7 @@ echo $INGRESS_GW_ADDRESS
 Test model gpt-3.5-turbo (General knowledge):
 
 ```bash
-curl -si -X POST $INGRESS_GW_ADDRESS/v1/chat/completions   -d '{
+curl -si -X POST $INGRESS_GW_ADDRESS/v1/chat/completions -H "content-type: application/json"  -d '{
     "model": "auto", 
     "messages": [
      { "role": "user", 
@@ -209,14 +209,14 @@ curl -si -X POST $INGRESS_GW_ADDRESS/v1/chat/completions   -d '{
     ]
   }'
 ```
-Test model gpt-oss-120b-local (computer science domain):
+Test model gpt-oss-120b-local (technology domain):
 
 ```bash
-curl -si -X POST $INGRESS_GW_ADDRESS/v1/chat/completions   -d '{
+curl -si -X POST $INGRESS_GW_ADDRESS/v1/chat/completions -H "content-type: application/json"  -d '{
     "model": "auto", 
     "messages": [
      { "role": "user", 
-       "content": "Which language is commonly used for web page structure?\n\nA. Python\nB. HTML\nC. C++\nD. Java"
+       "content": "Which language is commonly used for web page structure? A. Python, B. HTML, C. C++, D. Java"
      }
     ]
   }'
@@ -225,7 +225,7 @@ curl -si -X POST $INGRESS_GW_ADDRESS/v1/chat/completions   -d '{
 
 Test model gpt-oss-120b-local (physics domain):
 ```bash
-curl -si -X POST $INGRESS_GW_ADDRESS/v1/chat/completions   -d '{
+curl -si -X POST $INGRESS_GW_ADDRESS/v1/chat/completions -H "content-type: application/json"  -d '{
     "model": "auto", 
     "messages": [
      { "role": "user", 
@@ -238,11 +238,35 @@ curl -si -X POST $INGRESS_GW_ADDRESS/v1/chat/completions   -d '{
 Test model gpt-4.1 (Math domain):
 
 ```bash
-curl -si -X POST $INGRESS_GW_ADDRESS/v1/chat/completions -H "Application/json"  -d '{
+curl -si -X POST $INGRESS_GW_ADDRESS/v1/chat/completions  -H "content-type: application/json" -d '{
     "model": "auto", 
     "messages": [
      { "role": "user", 
        "content": "Solve the integral of x^2 from 0 to 1"
+     }
+    ]
+  }'
+```
+
+Test model gpt-4.1 (science domain):
+
+```bash
+curl -si -X POST $INGRESS_GW_ADDRESS/v1/chat/completions  -H "content-type: application/json" -d '{
+    "model": "auto", 
+    "messages": [
+     { "role": "user", 
+       "content": "Explain the process of photosynthesis in plants"
+     }
+    ]
+  }'
+```
+
+```bash
+curl -si -X POST $INGRESS_GW_ADDRESS/v1/chat/completions  -H "content-type: application/json" -d '{
+    "model": "auto", 
+    "messages": [
+     { "role": "user", 
+       "content": "Balance the chemical equation: H2 + O2 → H2O"
      }
     ]
   }'

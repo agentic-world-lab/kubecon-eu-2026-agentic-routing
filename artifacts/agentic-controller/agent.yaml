@@ -8,7 +8,7 @@ spec:
   type: BYO
   byo:
     deployment:
-      image: fjvicens/agentic-controller-router:v78
+      image: fjvicens/agentic-controller-router:v80
       env:
         - name: OPENAI_API_KEY
           valueFrom:

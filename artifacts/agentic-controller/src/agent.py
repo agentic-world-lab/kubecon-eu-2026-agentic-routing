@@ -76,7 +76,7 @@ def create_backend(
         parsed = urllib.parse.urlparse(endpoint)
         agentgateway_spec["ai"]["provider"]["host"] = parsed.hostname or ""
         agentgateway_spec["ai"]["provider"]["port"] = parsed.port or (443 if parsed.scheme == "https" else 80)
-        agentgateway_spec["ai"]["provider"]["path"] = parsed.path or "/v1/chat/completions"
+        agentgateway_spec["ai"]["provider"]["path"] = "/v1/chat/completions"
     else:
         agentgateway_spec["policies"] = {
             "auth": {
@@ -717,8 +717,9 @@ def process_llm_backend(name: str, namespace: str, model: str, endpoint: str, de
                 log.warning(f"Failed to parse pricing: {e}")
                 
         # Final update
-        update_cr_status(name, namespace, "Evaluated", json.dumps(final_results), ctx)
-        log.info(f"process_llm_backend: Completed workflow for {name}")
+        final_phase = "Failed" if acc == 0.0 and lat == 0.0 and safe_float(job_data.get('tok/s', 0)) == 0.0 else "Evaluated"
+        update_cr_status(name, namespace, final_phase, json.dumps(final_results), ctx)
+        log.info(f"process_llm_backend: Completed workflow for {name} with phase {final_phase}")
 
         # Automatic Job Cleanup: Delete the job after results are persistent in the CRD
         try:
