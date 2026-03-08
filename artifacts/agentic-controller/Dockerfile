@@ -9,8 +9,6 @@ RUN pip install --no-cache-dir uv && \
     uv pip install --no-cache -r pyproject.toml
 
 COPY src/ src/
-COPY main.py .
-
 EXPOSE 8080
 
-CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uv", "run", "kagent-adk", "run", "src", "--host", "0.0.0.0", "--port", "8080"]

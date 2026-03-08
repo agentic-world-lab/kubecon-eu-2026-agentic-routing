@@ -80,6 +80,7 @@ helm upgrade -i agentgateway oci://ghcr.io/kgateway-dev/charts/agentgateway \
 
 ```bash
 kubectl apply -f manifests/agentgateway/gateway.yaml
+kubectl apply -f manifests/agentgateway/agentgatewaypolicy.yaml
 ```
 
 ### Step 3 — Store the OpenAI API key
@@ -92,6 +93,15 @@ export OPENAI_API_KEY="<your_openai_api_key_here>"
 kubectl create secret generic openai-secret \
   --from-literal="Authorization=Bearer $OPENAI_API_KEY" \
   --namespace agentgateway-system
+
+kubectl create secret generic openai-secret \
+  --from-literal="OPENAI_API_KEY=Bearer $OPENAI_API_KEY" \
+  --namespace kagent
+
+kubectl create secret generic openai-secret \
+  --from-literal="OPENAI_API_KEY=Bearer $OPENAI_API_KEY" \
+  --namespace intelligent-router-system
+
 ```
 
 ### Step 3b — Store the HuggingFace token

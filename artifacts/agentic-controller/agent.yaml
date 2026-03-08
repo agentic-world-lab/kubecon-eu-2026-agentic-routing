@@ -8,12 +8,12 @@ spec:
   type: BYO
   byo:
     deployment:
-      image: fjvicens/agentic-controller-router:v43
+      image: fjvicens/agentic-controller-router:v78
       env:
         - name: OPENAI_API_KEY
           valueFrom:
             secretKeyRef:
-              name: kagent-openai
+              name: openai-secret
               key: OPENAI_API_KEY
         - name: KAGENT_NAME
           value: orchestrator

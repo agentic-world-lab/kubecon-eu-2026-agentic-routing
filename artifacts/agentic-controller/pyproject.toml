@@ -8,4 +8,6 @@ dependencies = [
   "google-adk>=1.22.1",
   "kagent-adk",
   "requests>=2.31.0",
+  "kopf>=1.37.0",
+  "kubernetes>=29.0.0",
 ]

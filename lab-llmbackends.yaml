@@ -2,7 +2,7 @@ apiVersion: edgecloudlabs.edgecloudlabs.com/v1alpha1
 kind: LLMBackend
 metadata:
   name: gpt-4-1-backend
-  namespace: default
+  namespace: intelligent-router-system
 spec:
   apiKeySecretRef:
     name: openai-secret
@@ -37,7 +37,7 @@ apiVersion: edgecloudlabs.edgecloudlabs.com/v1alpha1
 kind: LLMBackend
 metadata:
   name: gpt-5-mini-backend
-  namespace: default
+  namespace: intelligent-router-system
 spec:
   apiKeySecretRef:
     name: openai-secret
@@ -72,7 +72,7 @@ apiVersion: edgecloudlabs.edgecloudlabs.com/v1alpha1
 kind: LLMBackend
 metadata:
   name: gpt-4-1-mini-backend
-  namespace: default
+  namespace: intelligent-router-system
 spec:
   apiKeySecretRef:
     name: openai-secret
