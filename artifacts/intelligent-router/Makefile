@@ -57,8 +57,7 @@ build:
 		-t $(IMAGE) .
 
 ## Build the full image with M-Vert Pro (Rust/candle BERT classifier).
-## Build context is the intelligent-router/ parent directory.
-## This is the image that gets pushed to the registry.
+## Build context is the intelligent-router/ directory (contains Go source + candle-binding/).
 build-ml:
 	@echo ">>> Building $(IMAGE_ML) for platform $(PLATFORM) (with M-Vert Pro)"
 	docker buildx build \
@@ -66,7 +65,7 @@ build-ml:
 		--load \
 		-f Dockerfile.ml \
 		-t $(IMAGE_ML) \
-		../
+		.
 
 ## Push the ML image to the registry as the canonical latest tag (amd64 + arm64).
 ## Requires an active buildx builder: docker buildx create --use --name multiarch
@@ -77,7 +76,7 @@ push:
 		--push \
 		-f Dockerfile.ml \
 		-t $(REGISTRY_IMAGE):$(REGISTRY_TAG) \
-		../
+		.
 
 # ── Kubernetes deployment ─────────────────────────────────────────────────────────────
 

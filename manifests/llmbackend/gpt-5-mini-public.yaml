@@ -1,0 +1,10 @@
+apiVersion: edgecloudlabs.edgecloudlabs.com/v1alpha1
+kind: LLMBackend
+metadata:
+  name: gpt-5-mini-public
+  namespace: default
+spec:
+  deployment: remote
+  model: gpt-5-mini
+  apiKeySecretRef:
+    name: openai-secret

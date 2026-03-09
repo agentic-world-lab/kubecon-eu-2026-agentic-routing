@@ -154,28 +154,39 @@ func envOrDefault(key, fallback string) string {
 func convertLLMBackendsToConfig(backends []LLMBackendData, optimizationTarget string) *RouterConfig {
 	models := make(map[string]ModelConfig, len(backends))
 
-	// First pass: compute total costs for min-max normalisation.
+	// First pass: compute cost scores.
+	// Use pricing if available, otherwise use inverse throughput (1/tokensPerSecond)
+	// as a proxy — higher throughput ≈ lower cost per token.
+	type backendCost struct {
+		rawCost float64
+	}
+	costs := make([]backendCost, len(backends))
 	var minCost, maxCost float64
 	minCost = math.MaxFloat64
-	for _, b := range backends {
-		total := b.PromptCost + b.CompletionCost
-		if total < minCost {
-			minCost = total
+	for i, b := range backends {
+		var raw float64
+		if b.PromptCost+b.CompletionCost > 0 {
+			raw = b.PromptCost + b.CompletionCost
+		} else if b.TokensPerSecond > 0 {
+			raw = 1.0 / b.TokensPerSecond // inverse throughput as cost proxy
 		}
-		if total > maxCost {
-			maxCost = total
+		costs[i] = backendCost{rawCost: raw}
+		if raw < minCost {
+			minCost = raw
+		}
+		if raw > maxCost {
+			maxCost = raw
 		}
 	}
 	costRange := maxCost - minCost
 	if costRange == 0 {
-		costRange = 1 // avoid division by zero when all costs are equal
+		costRange = 1
 	}
 
-	// Pick the cheapest model as default.
 	defaultModel := ""
 	cheapest := math.MaxFloat64
 
-	for _, b := range backends {
+	for i, b := range backends {
 		// Aggregate categoryAccuracy → domain quality scores.
 		domainSums := make(map[string]float64)
 		domainCounts := make(map[string]int)
@@ -192,9 +203,7 @@ func convertLLMBackendsToConfig(backends []LLMBackendData, optimizationTarget st
 			qualityScores[domain] = sum / float64(domainCounts[domain])
 		}
 
-		// Normalise cost to [0,1].
-		totalCost := b.PromptCost + b.CompletionCost
-		costScore := (totalCost - minCost) / costRange
+		costScore := (costs[i].rawCost - minCost) / costRange
 
 		models[b.Name] = ModelConfig{
 			QualityScores:           qualityScores,
@@ -202,8 +211,8 @@ func convertLLMBackendsToConfig(backends []LLMBackendData, optimizationTarget st
 			InitialAverageLatencyMs: b.AvgResponseTime * 1000, // seconds → ms
 		}
 
-		if totalCost < cheapest {
-			cheapest = totalCost
+		if costs[i].rawCost < cheapest {
+			cheapest = costs[i].rawCost
 			defaultModel = b.Name
 		}
 	}

@@ -25,7 +25,6 @@ spec:
         apiGroup: kagent.dev
         kind: MCPServer
         name: openrouter-pricing-mcp
-        namespace: kagent
         toolNames:
         - get_model_pricing
       type: McpServer

@@ -21,7 +21,5 @@ spec:
     cmd: python
     image: fjvicens/openrouter-pricing-mcp:0.1.2
     port: 3000
-    replicas: 1
   stdioTransport: {}
-  timeout: 30s
   transportType: stdio

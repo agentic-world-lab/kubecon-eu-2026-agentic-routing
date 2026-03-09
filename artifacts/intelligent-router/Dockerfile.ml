@@ -1,6 +1,6 @@
 # Dockerfile.ml — model-router with M-Vert Pro (BERT/candle) domain classifier.
 #
-# Build context: the repository root directory.
+# Build context: the intelligent-router/ directory itself.
 #
 # The BERT model is NOT embedded in this image.
 # It is downloaded at pod startup by an initContainer (see manifests/statefulset.yaml)
@@ -20,7 +20,7 @@ WORKDIR /app
 
 # Copy the full candle-binding directory and build the shared library.
 # CPU-only build: --no-default-features disables CUDA/MKL/Accelerate.
-COPY semantic-router/candle-binding/ candle-binding/
+COPY candle-binding/ candle-binding/
 RUN cd candle-binding && \
     cargo build --release --no-default-features && \
     echo "Built:" && ls -lh target/release/libcandle_semantic_router.so
@@ -28,20 +28,19 @@ RUN cd candle-binding && \
 # ── Stage 2: Build the Go binary with CGO ─────────────────────────────────────
 FROM golang:bookworm AS go-builder
 
-WORKDIR /app
+WORKDIR /app/intelligent-router
 
-COPY semantic-router/candle-binding/go.mod semantic-router/candle-binding/semantic-router.go candle-binding/
+COPY candle-binding/go.mod candle-binding/semantic-router.go ./candle-binding/
 COPY --from=rust-builder /app/candle-binding/target/release/libcandle_semantic_router.so \
-    candle-binding/target/release/libcandle_semantic_router.so
+    ./candle-binding/target/release/libcandle_semantic_router.so
 
-COPY intelligent-router/go.mod intelligent-router/go.sum intelligent-router/
-RUN cd intelligent-router && GOFLAGS="-mod=mod" go mod download
+COPY go.mod go.sum ./
+RUN GOFLAGS="-mod=mod" go mod download
 
-COPY intelligent-router/ intelligent-router/
+COPY . .
 
 ARG TARGETOS=linux TARGETARCH
-RUN cd intelligent-router && \
-    CGO_ENABLED=1 \
+RUN CGO_ENABLED=1 \
     GOOS=${TARGETOS} \
     GOFLAGS="-mod=mod" \
     go build \
@@ -59,8 +58,6 @@ COPY --from=go-builder /app/router /app/router
 COPY --from=rust-builder \
     /app/candle-binding/target/release/libcandle_semantic_router.so \
     /app/lib/libcandle_semantic_router.so
-COPY intelligent-router/config.yaml /app/config.yaml
-
 # /app/models is populated at runtime by the initContainer (see manifests/statefulset.yaml).
 RUN mkdir -p /app/models/domain-classifier
 
@@ -70,4 +67,4 @@ USER 10101
 
 EXPOSE 18080 9091
 
-CMD ["/app/router", "--config=/app/config.yaml"]
+CMD ["/app/router"]

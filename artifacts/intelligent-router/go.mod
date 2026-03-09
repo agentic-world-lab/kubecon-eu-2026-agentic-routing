@@ -15,7 +15,7 @@ require (
 // candle-binding is a local module that wraps the Rust candle ML library via CGO.
 // It is only compiled when CGO_ENABLED=1 (see Dockerfile.ml and mlclassifier.go).
 // The pure-Go build (CGO_ENABLED=0) uses the mlclassifier_stub.go no-op instead.
-replace github.com/vllm-project/semantic-router/candle-binding => ../candle-binding
+replace github.com/vllm-project/semantic-router/candle-binding => ./candle-binding
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect

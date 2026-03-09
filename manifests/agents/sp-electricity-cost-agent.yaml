@@ -21,7 +21,6 @@ spec:
         apiGroup: kagent.dev
         kind: MCPServer
         name: spain-electricity-cost-mcp
-        namespace: kagent
         toolNames:
         - get_current_price
       type: McpServer

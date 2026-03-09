@@ -29,9 +29,6 @@ status:
       philosophy: "0.7000"
       physics: "0.7500"
       psychology: "0.7500"
-    pricing:
-      prompt: "5.00"
-      completion: "15.00"
 ---
 apiVersion: edgecloudlabs.edgecloudlabs.com/v1alpha1
 kind: LLMBackend
@@ -50,23 +47,20 @@ status:
     tokensPerSecond: "180.00"
     overallAccuracy: "0.6607"
     categoryAccuracy:
-      biology: "0.7000"
-      business: "0.6500"
-      chemistry: "0.7500"
-      computer science: "0.8000"
-      economics: "0.7000"
-      engineering: "0.7500"
+      biology: "0.9000"
+      business: "0.5000"
+      chemistry: "0.9500"
+      computer science: "0.5500"
+      economics: "0.5000"
+      engineering: "0.5000"
       health: "0.6000"
       history: "0.5500"
       law: "0.5000"
-      math: "0.8000"
+      math: "0.9500"
       other: "0.6500"
       philosophy: "0.5500"
-      physics: "0.8500"
+      physics: "0.9500"
       psychology: "0.5500"
-    pricing:
-      prompt: "3.00"
-      completion: "10.00"
 ---
 apiVersion: edgecloudlabs.edgecloudlabs.com/v1alpha1
 kind: LLMBackend
@@ -83,22 +77,19 @@ status:
   results:
     avgResponseTime: "2.0000"
     tokensPerSecond: "90.00"
-    overallAccuracy: "0.4893"
+    overallAccuracy: "0.5536"
     categoryAccuracy:
-      biology: "0.5000"
-      business: "0.5000"
-      chemistry: "0.4500"
-      computer science: "0.6000"
-      economics: "0.4500"
-      engineering: "0.5500"
-      health: "0.5000"
-      history: "0.4000"
-      law: "0.3500"
-      math: "0.5500"
+      biology: "0.4000"
+      business: "0.3500"
+      chemistry: "0.3500"
+      computer science: "0.9500"
+      economics: "0.3000"
+      engineering: "0.9000"
+      health: "0.4000"
+      history: "0.3500"
+      law: "0.3000"
+      math: "0.5000"
       other: "0.5000"
-      philosophy: "0.4500"
-      physics: "0.5000"
-      psychology: "0.4500"
-    pricing:
-      prompt: "0.50"
-      completion: "1.50"
+      philosophy: "0.4000"
+      physics: "0.4500"
+      psychology: "0.4000"
