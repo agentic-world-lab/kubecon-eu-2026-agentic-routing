@@ -1,7 +1,7 @@
 apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayPolicy
 metadata:
-  name: route-picker
+  name: intelligent-router-policy
   namespace: agentgateway-system
 spec:
   targetRefs:

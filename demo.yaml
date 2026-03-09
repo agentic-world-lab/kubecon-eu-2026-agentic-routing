@@ -1,9 +1,0 @@
-session_name: demo
-windows:
-  - window_name: logs
-    layout: tiled
-    panes:
-      - kubectl logs -f -n default -l app.kubernetes.io/component=evaluator
-      - watch kubectl get llmbackends.edgecloudlabs.edgecloudlabs.com -n default
-      - kubectl logs -f -n kagent -l app.kubernetes.io/component=controller
-      - kubectl logs -f -n kagent -l kagent=sr-config-agent
