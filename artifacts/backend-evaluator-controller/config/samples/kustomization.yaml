@@ -1,4 +1,0 @@
-## Append samples of your project ##
-resources:
-- edgecloudlabs_v1alpha1_llmbackend.yaml
-# +kubebuilder:scaffold:manifestskustomizesamples

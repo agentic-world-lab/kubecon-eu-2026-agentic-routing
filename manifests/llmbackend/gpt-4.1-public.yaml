@@ -2,7 +2,7 @@ apiVersion: edgecloudlabs.edgecloudlabs.com/v1alpha1
 kind: LLMBackend
 metadata:
   name: gpt-4.1-public
-  namespace: default
+  namespace: intelligent-router-system
 spec:
   deployment: remote
   model: gpt-4.1

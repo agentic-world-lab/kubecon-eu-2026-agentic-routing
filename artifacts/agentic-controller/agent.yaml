@@ -1,0 +1,35 @@
+apiVersion: kagent.dev/v1alpha2
+kind: Agent
+metadata:
+  name: orchestrator
+  namespace: kagent
+spec:
+  description: Orchestrates LLM backend evaluation lifecycle with pricing and energy cost enrichment via A2A
+  type: BYO
+  byo:
+    deployment:
+      image: fjvicens/agentic-controller-router:v80
+      env:
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openai-secret
+              key: OPENAI_API_KEY
+        - name: KAGENT_NAME
+          value: orchestrator
+        - name: K8S_AGENT_NAME
+          value: k8s-agent
+        - name: KAGENT_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: KAGENT_URL
+          value: "http://kagent-controller.kagent:8083"
+        - name: KAGENT_BASE_URL
+          value: "http://kagent-controller:8083/api/a2a/kagent"
+        - name: COST_AGENT_NAME
+          value: "model-cost-agent"
+        - name: ENERGY_AGENT_NAME
+          value: "sp-electricity-cost-agent"
+        - name: SR_CONFIG_AGENT_NAME
+          value: "sr-config-agent"

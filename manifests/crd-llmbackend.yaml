@@ -25,5 +25,30 @@ spec:
               x-kubernetes-preserve-unknown-fields: true
             status:
               type: object
+              properties:
+                phase:
+                  type: string
+                backendName:
+                  type: string
+                results:
+                  type: object
+                  properties:
+                    overallAccuracy:
+                      type: string
+                    avgResponseTime:
+                      type: string
+                    tokensPerSecond:
+                      type: string
+                    categoryAccuracy:
+                      type: object
+                      additionalProperties:
+                        type: string
+                    pricing:
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
+                    energyCost:
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
               x-kubernetes-preserve-unknown-fields: true
-      subresources: {}
+      subresources:
+        status: {}

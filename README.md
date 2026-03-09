@@ -80,6 +80,7 @@ helm upgrade -i agentgateway oci://ghcr.io/kgateway-dev/charts/agentgateway \
 
 ```bash
 kubectl apply -f manifests/agentgateway/gateway.yaml
+kubectl apply -f manifests/agentgateway/agentgatewaypolicy.yaml
 ```
 
 ### Step 3 — Store the OpenAI API key
@@ -92,6 +93,15 @@ export OPENAI_API_KEY="<your_openai_api_key_here>"
 kubectl create secret generic openai-secret \
   --from-literal="Authorization=Bearer $OPENAI_API_KEY" \
   --namespace agentgateway-system
+
+kubectl create secret generic openai-secret \
+  --from-literal="OPENAI_API_KEY=Bearer $OPENAI_API_KEY" \
+  --namespace kagent
+
+kubectl create secret generic openai-secret \
+  --from-literal="OPENAI_API_KEY=Bearer $OPENAI_API_KEY" \
+  --namespace intelligent-router-system
+
 ```
 
 ### Step 3b — Store the HuggingFace token
@@ -155,15 +165,15 @@ kubectl apply -f manifests/agent-watcher/
 ## Step 7 — Install the Backend Evaluation Operator
 
 ```bash
-kubectl apply -f manifests/backend-evaluator-controller/install.yaml
+kubectl apply -f manifests/model-agentic-controller/install.yaml
 ```
 
 ## Step 8 — Deploy the Intelligent Router
 
 ```bash
 # Intelligent-router CRD, RBAC, CR config, and workload
-kubectl apply -f manifests/intelligent-router/crd-intelligent-router-config.yaml
 kubectl apply -f manifests/namespace.yaml
+kubectl apply -f manifests/intelligent-router/crd-intelligent-router-config.yaml
 kubectl apply -f manifests/intelligent-router/rbac.yaml
 kubectl apply -f manifests/intelligent-router/service.yaml
 kubectl apply -f manifests/intelligent-router/statefulset.yaml
@@ -190,7 +200,7 @@ echo $INGRESS_GW_ADDRESS
 Test model gpt-3.5-turbo (General knowledge):
 
 ```bash
-curl -si -X POST $INGRESS_GW_ADDRESS/v1/chat/completions   -d '{
+curl -si -X POST $INGRESS_GW_ADDRESS/v1/chat/completions -H "content-type: application/json"  -d '{
     "model": "auto", 
     "messages": [
      { "role": "user", 
@@ -199,14 +209,14 @@ curl -si -X POST $INGRESS_GW_ADDRESS/v1/chat/completions   -d '{
     ]
   }'
 ```
-Test model gpt-oss-120b-local (computer science domain):
+Test model gpt-oss-120b-local (technology domain):
 
 ```bash
-curl -si -X POST $INGRESS_GW_ADDRESS/v1/chat/completions   -d '{
+curl -si -X POST $INGRESS_GW_ADDRESS/v1/chat/completions -H "content-type: application/json"  -d '{
     "model": "auto", 
     "messages": [
      { "role": "user", 
-       "content": "Which language is commonly used for web page structure?\n\nA. Python\nB. HTML\nC. C++\nD. Java"
+       "content": "Which language is commonly used for web page structure? A. Python, B. HTML, C. C++, D. Java"
      }
     ]
   }'
@@ -215,7 +225,7 @@ curl -si -X POST $INGRESS_GW_ADDRESS/v1/chat/completions   -d '{
 
 Test model gpt-oss-120b-local (physics domain):
 ```bash
-curl -si -X POST $INGRESS_GW_ADDRESS/v1/chat/completions   -d '{
+curl -si -X POST $INGRESS_GW_ADDRESS/v1/chat/completions -H "content-type: application/json"  -d '{
     "model": "auto", 
     "messages": [
      { "role": "user", 
@@ -228,11 +238,35 @@ curl -si -X POST $INGRESS_GW_ADDRESS/v1/chat/completions   -d '{
 Test model gpt-4.1 (Math domain):
 
 ```bash
-curl -si -X POST $INGRESS_GW_ADDRESS/v1/chat/completions -H "Application/json"  -d '{
+curl -si -X POST $INGRESS_GW_ADDRESS/v1/chat/completions  -H "content-type: application/json" -d '{
     "model": "auto", 
     "messages": [
      { "role": "user", 
        "content": "Solve the integral of x^2 from 0 to 1"
+     }
+    ]
+  }'
+```
+
+Test model gpt-4.1 (science domain):
+
+```bash
+curl -si -X POST $INGRESS_GW_ADDRESS/v1/chat/completions  -H "content-type: application/json" -d '{
+    "model": "auto", 
+    "messages": [
+     { "role": "user", 
+       "content": "Explain the process of photosynthesis in plants"
+     }
+    ]
+  }'
+```
+
+```bash
+curl -si -X POST $INGRESS_GW_ADDRESS/v1/chat/completions  -H "content-type: application/json" -d '{
+    "model": "auto", 
+    "messages": [
+     { "role": "user", 
+       "content": "Balance the chemical equation: H2 + O2 → H2O"
      }
     ]
   }'

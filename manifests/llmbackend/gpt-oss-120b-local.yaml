@@ -2,7 +2,7 @@ apiVersion: edgecloudlabs.edgecloudlabs.com/v1alpha1
 kind: LLMBackend
 metadata:
   name: gpt-oss-120b-local
-  namespace: default
+  namespace: intelligent-router-system
 spec:
   deployment: local
   model: gpt-oss-120b

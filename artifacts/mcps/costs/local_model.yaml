@@ -4,7 +4,7 @@ metadata:
   name: gpt-oss-120b
   namespace: kagent
 spec:
-  apiKeySecret: kagent-openai
+  apiKeySecret: openai-secret
   apiKeySecretKey: OPENAI_API_KEY
   model: gpt-oss-120b
   provider: OpenAI
