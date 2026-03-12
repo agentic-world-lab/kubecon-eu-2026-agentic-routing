@@ -1,0 +1,188 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-collector-config
+  namespace: monitoring
+data:
+  config.yaml: |
+    receivers:
+      prometheus:
+        config:
+          scrape_configs:
+            - job_name: 'agentgateway-proxy'
+              scrape_interval: 15s
+              kubernetes_sd_configs:
+                - role: pod
+                  namespaces:
+                    names:
+                      - agentgateway-system
+              relabel_configs:
+                - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+                  regex: agentgateway-proxy
+                  action: keep
+                - source_labels: [__meta_kubernetes_pod_ip]
+                  regex: (.+)
+                  target_label: __address__
+                  replacement: $${1}:15020
+                - source_labels: [__meta_kubernetes_pod_name]
+                  target_label: pod
+                - source_labels: [__meta_kubernetes_namespace]
+                  target_label: namespace
+                - target_label: job
+                  replacement: monitoring/agentgateway
+              metric_relabel_configs:
+                - source_labels: [gateway]
+                  target_label: gateway_instance
+            - job_name: 'agentgateway-controller'
+              scrape_interval: 15s
+              kubernetes_sd_configs:
+                - role: pod
+                  namespaces:
+                    names:
+                      - agentgateway-system
+              relabel_configs:
+                - source_labels: [__meta_kubernetes_pod_label_agentgateway]
+                  regex: agentgateway
+                  action: keep
+                - source_labels: [__meta_kubernetes_pod_ip]
+                  regex: (.+)
+                  target_label: __address__
+                  replacement: $${1}:9092
+                - source_labels: [__meta_kubernetes_pod_name]
+                  target_label: pod
+                - source_labels: [__meta_kubernetes_namespace]
+                  target_label: namespace
+            - job_name: 'bbva-rate-limiter'
+              scrape_interval: 15s
+              kubernetes_sd_configs:
+                - role: pod
+                  namespaces:
+                    names:
+                      - agentgateway-system
+              relabel_configs:
+                - source_labels: [__meta_kubernetes_pod_label_app]
+                  regex: bbva-rate-limiter
+                  action: keep
+                - source_labels: [__meta_kubernetes_pod_ip]
+                  regex: (.+)
+                  target_label: __address__
+                  replacement: $${1}:9091
+                - source_labels: [__meta_kubernetes_pod_name]
+                  target_label: pod
+                - source_labels: [__meta_kubernetes_namespace]
+                  target_label: namespace
+                - target_label: job
+                  replacement: monitoring/bbva-rate-limiter
+            - job_name: 'intelligent-router'
+              scrape_interval: 15s
+              kubernetes_sd_configs:
+                - role: pod
+                  namespaces:
+                    names:
+                      - intelligent-router-system
+              relabel_configs:
+                - source_labels: [__meta_kubernetes_pod_label_app]
+                  regex: intelligent-router
+                  action: keep
+                - source_labels: [__meta_kubernetes_pod_ip]
+                  regex: (.+)
+                  target_label: __address__
+                  replacement: $${1}:9091
+                - source_labels: [__meta_kubernetes_pod_name]
+                  target_label: pod
+                - source_labels: [__meta_kubernetes_namespace]
+                  target_label: namespace
+                - target_label: job
+                  replacement: monitoring/intelligent-router
+
+    exporters:
+      prometheusremotewrite:
+        endpoint: "http://prometheus.monitoring.svc:9090/api/v1/write"
+
+    service:
+      pipelines:
+        metrics:
+          receivers: [prometheus]
+          exporters: [prometheusremotewrite]
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: otel-collector
+  namespace: monitoring
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: otel-collector
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "nodes", "endpoints", "services"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["discovery.k8s.io"]
+    resources: ["endpointslices"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: otel-collector
+subjects:
+  - kind: ServiceAccount
+    name: otel-collector
+    namespace: monitoring
+roleRef:
+  kind: ClusterRole
+  name: otel-collector
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: otel-collector
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: otel-collector
+  template:
+    metadata:
+      labels:
+        app: otel-collector
+    spec:
+      serviceAccountName: otel-collector
+      containers:
+        - name: otel-collector
+          image: otel/opentelemetry-collector-contrib:0.96.0
+          args: ["--config=/etc/otel/config.yaml"]
+          ports:
+            - containerPort: 8888
+              name: metrics
+          volumeMounts:
+            - name: config
+              mountPath: /etc/otel
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+      volumes:
+        - name: config
+          configMap:
+            name: otel-collector-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-collector
+  namespace: monitoring
+spec:
+  selector:
+    app: otel-collector
+  ports:
+    - name: metrics
+      port: 8888
+      targetPort: 8888

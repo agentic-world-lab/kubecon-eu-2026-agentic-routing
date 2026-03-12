@@ -267,7 +267,35 @@ You should see it polling for LLMBackend CRs but finding none with `phase=Evalua
 
 ---
 
-## Step 9 — Apply LLMBackend CRs (triggers the agentic pipeline)
+## Step 9 — Deploy monitoring (Prometheus + Grafana + OTel Collector)
+
+Deploy the observability stack to scrape metrics from AgentGateway and the Intelligent Router:
+
+```bash
+kubectl apply -f manifests/observability/namespace.yaml
+kubectl apply -f manifests/observability/prometheus.yaml
+kubectl apply -f manifests/observability/otel-collector.yaml
+kubectl apply -f manifests/observability/grafana.yaml
+```
+
+Wait for the monitoring pods to be ready:
+```bash
+kubectl rollout status deployment/prometheus -n monitoring --timeout=60s
+kubectl rollout status deployment/otel-collector -n monitoring --timeout=60s
+kubectl rollout status deployment/grafana -n monitoring --timeout=60s
+```
+
+Access Grafana:
+```bash
+kubectl port-forward svc/grafana -n monitoring 3000:3000 &
+```
+Open http://localhost:3000 (login: admin / admin). Two dashboards are pre-loaded in the **AgentGateway** folder:
+- **AgentGateway Dashboard** — overview, tokens, latency, error rates, infrastructure
+- **Latency, Requests & Day 2 Health** — P50/P95/P99, SLI, runtime, rate limiting
+
+---
+
+## Step 10 — Apply LLMBackend CRs (triggers the agentic pipeline)
 
 This is where the magic happens. Each LLMBackend CR triggers the orchestrator agent to:
 1. Create an AgentgatewayBackend + HTTPRoute
@@ -294,7 +322,7 @@ Wait until **all 4 models** show `phase=Evaluated`. This typically takes 2-5 min
 
 ---
 
-## Step 10 — Discover the domain-to-model mapping
+## Step 11 — Discover the domain-to-model mapping
 
 Once all LLMBackends are evaluated, inspect their per-domain accuracy scores:
 
@@ -321,7 +349,7 @@ You should see log lines showing the router loaded the models and their scores. 
 
 ---
 
-## Step 11 — Test routing with curl
+## Step 12 — Test routing with curl
 
 Set up access to the gateway:
 ```bash
@@ -452,6 +480,9 @@ For each test, confirm:
 ## Cleanup
 
 ```bash
+# Remove monitoring
+kubectl delete -f manifests/observability/
+
 # Remove LLMBackend CRs
 kubectl delete -f manifests/llmbackend/
 
