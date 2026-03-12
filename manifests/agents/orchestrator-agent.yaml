@@ -12,7 +12,7 @@ spec:
         valueFrom:
           secretKeyRef:
             key: OPENAI_API_KEY
-            name: openai-secret
+            name: kagent-openai
       - name: KAGENT_NAME
         value: orchestrator
       - name: K8S_AGENT_NAME
@@ -22,9 +22,9 @@ spec:
           fieldRef:
             fieldPath: metadata.namespace
       - name: KAGENT_URL
-        value: http://kagent-controller.kagent:8083
+        value: http://kagent-controller.default:8083
       - name: KAGENT_BASE_URL
-        value: http://kagent-controller:8083/api/a2a/kagent
+        value: http://kagent-controller.default:8083/api/a2a/kagent
       - name: COST_AGENT_NAME
         value: model-cost-agent
       - name: ENERGY_AGENT_NAME

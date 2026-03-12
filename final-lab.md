@@ -112,16 +112,22 @@ kubectl create namespace kagent 2>/dev/null || true
 
 Create the OpenAI secret in all required namespaces:
 ```bash
+# AgentGateway uses the Authorization key as the HTTP header value
 kubectl create secret generic openai-secret \
   --from-literal="Authorization=Bearer $OPENAI_API_KEY" \
   --namespace agentgateway-system
 
+# LLMBackend namespaces need both keys:
+#   - Authorization (with Bearer prefix): used by AgentgatewayBackend for upstream auth
+#   - OPENAI_API_KEY (raw key): used by MMLU evaluation jobs
 kubectl create secret generic openai-secret \
-  --from-literal="OPENAI_API_KEY=Bearer $OPENAI_API_KEY" \
-  --namespace kagent
+  --from-literal="Authorization=Bearer $OPENAI_API_KEY" \
+  --from-literal="OPENAI_API_KEY=$OPENAI_API_KEY" \
+  --namespace default
 
 kubectl create secret generic openai-secret \
-  --from-literal="OPENAI_API_KEY=Bearer $OPENAI_API_KEY" \
+  --from-literal="Authorization=Bearer $OPENAI_API_KEY" \
+  --from-literal="OPENAI_API_KEY=$OPENAI_API_KEY" \
   --namespace intelligent-router-system
 ```
 
@@ -158,9 +164,37 @@ curl https://raw.githubusercontent.com/kagent-dev/kagent/refs/heads/main/scripts
 kagent install
 ```
 
-Wait for kagent to be ready:
+Wait for kagent to be ready (kagent installs its controller in the `default` namespace):
 ```bash
-kubectl rollout status deployment/kagent-controller -n kagent --timeout=180s
+kubectl rollout status deployment/kagent-controller -n default --timeout=180s
+```
+
+The declarative agents run in the `kagent` namespace but need access to the `ModelConfig` and `RemoteMCPServer` resources that kagent installs in `default`. Create them in `kagent`:
+
+```bash
+cat <<'EOF' | kubectl apply -n kagent -f -
+apiVersion: kagent.dev/v1alpha2
+kind: ModelConfig
+metadata:
+  name: default-model-config
+spec:
+  apiKeySecret: kagent-openai
+  apiKeySecretKey: OPENAI_API_KEY
+  model: gpt-4.1-mini
+  provider: OpenAI
+---
+apiVersion: kagent.dev/v1alpha2
+kind: RemoteMCPServer
+metadata:
+  name: kagent-tool-server
+spec:
+  description: Official KAgent tool server
+  protocol: STREAMABLE_HTTP
+  sseReadTimeout: 5m0s
+  terminateOnClose: true
+  timeout: 30s
+  url: http://kagent-tools.default:8084/mcp
+EOF
 ```
 
 ---
@@ -397,14 +431,16 @@ The router uses the BERT ML classifier (with keyword fallback) to detect the dom
 
 **Expected routing (based on MMLU-Pro evaluation scores):**
 
-| Domain | Prompt example | Expected model | Why |
-|--------|---------------|----------------|-----|
-| finance | "What stocks should I invest in?" | gpt-4.1-mini | Highest finance accuracy (business+economics avg) |
-| technology | "Explain Kubernetes networking" | gpt-5-mini | Highest technology accuracy (CS+engineering avg) |
-| science | "Balance the chemical equation" | gpt-5-mini | Highest science accuracy (bio+chem+math+physics avg) |
-| health | "Symptoms of type 2 diabetes?" | gpt-4.1-mini | Highest health accuracy (health+psychology avg) |
-| legal | "Legal process for filing a patent?" | gpt-4.1 | Highest legal accuracy (law+history avg) |
-| general | "Hello, how are you?" | gpt-4.1 | Highest general accuracy (other+philosophy avg) |
+> **Note:** The exact model selected per domain depends on which models are evaluated and their MMLU-Pro scores, which vary across runs. The table below shows the general pattern — the router always picks the model with the highest weighted accuracy for each classified domain.
+
+| Domain | Prompt example | Expected winner | Why |
+| ------ | ------------- | --------------- | --- |
+| finance | "What stocks should I invest in?" | Highest business+economics | Router averages category scores |
+| technology | "Explain Kubernetes networking" | Highest CS+engineering | Router averages category scores |
+| science | "Balance the chemical equation" | Highest bio+chem+math+physics | Router averages category scores |
+| health | "Symptoms of type 2 diabetes?" | Highest health+psychology | Router averages category scores |
+| legal | "Legal process for filing a patent?" | Highest law+history | Router averages category scores |
+| general | "Hello, how are you?" | Highest other+philosophy | Router averages category scores |
 
 For each test, confirm:
 1. **Response `model` field** — The model in the JSON response matches the expected winner for that domain.
@@ -441,7 +477,7 @@ kubectl delete -f manifests/agentgateway/gateway.yaml
 
 # Remove secrets
 kubectl delete secret openai-secret -n agentgateway-system
-kubectl delete secret openai-secret -n kagent
+kubectl delete secret openai-secret -n default
 kubectl delete secret openai-secret -n intelligent-router-system
 kubectl delete secret huggingface-api-key -n intelligent-router-system
 
