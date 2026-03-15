@@ -22,16 +22,19 @@ spec:
           fieldRef:
             fieldPath: metadata.namespace
       - name: KAGENT_URL
-        value: http://kagent-controller.default:8083
+        value: http://kagent-controller.kagent:8083
       - name: KAGENT_BASE_URL
-        value: http://kagent-controller.default:8083/api/a2a/kagent
+        value: http://kagent-controller.kagent:8083/api/a2a/kagent
       - name: COST_AGENT_NAME
         value: model-cost-agent
       - name: ENERGY_AGENT_NAME
         value: sp-electricity-cost-agent
       - name: SR_CONFIG_AGENT_NAME
         value: sr-config-agent
-      image: fjvicens/agentic-controller-router:v43
+      - name: EVAL_JOB_AGENT_NAME
+        value: eval-job-agent
+      image: fjvicens/agentic-controller-router:v48
+      imagePullPolicy: Always
   description: Orchestrates LLM backend evaluation lifecycle with pricing and energy
     cost enrichment via A2A
   type: BYO

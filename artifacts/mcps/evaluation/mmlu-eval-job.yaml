@@ -7,7 +7,7 @@ spec:
     spec:
       containers:
       - name: evaluator
-        image: fjvicens/mmlu-pro-eval-job:0.1
+        image: fjvicens/mmlu-pro-eval-job:0.5
         imagePullPolicy: Always
         env:
         - name: EVAL_ENDPOINT
