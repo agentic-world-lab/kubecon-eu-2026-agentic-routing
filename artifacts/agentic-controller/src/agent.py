@@ -31,6 +31,7 @@ K8S_AGENT_NAME: str = os.getenv("K8S_AGENT_NAME", "k8s-agent")
 COST_AGENT_NAME: str = os.getenv("COST_AGENT_NAME", "model-cost-agent")
 ENERGY_AGENT_NAME: str = os.getenv("ENERGY_AGENT_NAME", "sp-electricity-cost-agent")
 SR_CONFIG_AGENT_NAME: str = os.getenv("SR_CONFIG_AGENT_NAME", "sr-config-agent")
+EVAL_JOB_AGENT_NAME: str = os.getenv("EVAL_JOB_AGENT_NAME", "eval-job-agent")
 
 # ---------------------------------------------------------------------------
 # Tools — K8s operations (via A2A to future K8s Agent)
@@ -181,10 +182,10 @@ def launch_eval_job(
     namespace: str,
     tool_context: ToolContext,
 ) -> str:
-    logging.info(f"launch_eval_job: name={name}, model_name_from_spec={model_name_from_spec}, endpoint={endpoint}")
     """Launch an MMLU evaluation Kubernetes Job for the given model.
 
-    Delegates to the K8s Agent via A2A.
+    Delegates to the Eval Job Agent via A2A. The eval-job-agent uses its
+    skill to generate the Job manifest and applies it via k8s tools.
 
     Args:
         name: The LLMBackend resource name.
@@ -195,62 +196,20 @@ def launch_eval_job(
     Returns:
         A string confirming the job was created.
     """
-    # Use a deterministic name to prevent double-triggering from multiple controllers.
-    # If the job already exists, the K8s Agent tool will return an error, 
-    # and the second orchestrator will fail/stop harmlessly.
+    logging.info(f"launch_eval_job: name={name}, model_name_from_spec={model_name_from_spec}, endpoint={endpoint}")
+
     job_name = f"eval-{name}"
 
-    job_manifest = {
-        "apiVersion": "batch/v1",
-        "kind": "Job",
-        "metadata": {
-            "name": job_name,
-            "namespace": namespace
-        },
-        "spec": {
-            "backoffLimit": 0,
-            "template": {
-                "spec": {
-                    "serviceAccountName": "default",
-                    "containers": [
-                        {
-                            "name": "eval",
-                            "image": "fjvicens/mmlu-pro-eval-job:0.2",
-                            "env": [
-                                {
-                                    "name": "EVAL_MODEL",
-                                    "value": model_name_from_spec
-                                },
-                                {
-                                    "name": "EVAL_ENDPOINT",
-                                    "value": endpoint
-                                },
-                                {
-                                    "name": "OPENAI_API_KEY",
-                                    "valueFrom": {
-                                        "secretKeyRef": {
-                                            "name": "openai-secret",
-                                            "key": "OPENAI_API_KEY"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    ],
-                    "restartPolicy": "Never"
-                }
-            }
-        }
-    }
-    
-    yaml_string = yaml.dump(job_manifest, sort_keys=False)
-
     message = (
-        f"You are the K8s Agent. Execute tools to create the following evaluation Job exactly as provided via YAML:\n\n"
-        f"---\n{yaml_string}\n---\n\n"
-        "Use your tools to apply this YAML exactly. Return success or failure."
+        f"Launch an MMLU evaluation job with the following parameters:\n"
+        f"- name: {name}\n"
+        f"- model_name_from_spec: {model_name_from_spec}\n"
+        f"- endpoint: {endpoint}\n"
+        f"- namespace: {namespace}\n\n"
+        f"Use your skill to generate the Job manifest YAML, then apply it to the cluster. "
+        f"Return success or failure."
     )
-    result = call_agent(K8S_AGENT_NAME, message)
+    result = call_agent(EVAL_JOB_AGENT_NAME, message)
     tool_context.state["last_job_launched"] = job_name
     return result
 

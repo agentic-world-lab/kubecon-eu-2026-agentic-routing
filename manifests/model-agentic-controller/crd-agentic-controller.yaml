@@ -96,7 +96,7 @@ spec:
                   endpoint.
                 type: string
               evaluationImage:
-                default: fjvicens/mmlu-pro-eval-job:0.2
+                default: fjvicens/mmlu-pro-eval-job:0.5
                 description: evaluationImage is the container image to use for the
                   evaluation Job.
                 type: string

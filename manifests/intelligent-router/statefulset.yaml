@@ -232,8 +232,8 @@ spec:
               cpu: "200m"
               memory: "512Mi"
             limits:
-              cpu: "1000m"
-              memory: "2Gi"
+              cpu: "4000m"
+              memory: "8Gi"
           readinessProbe:
             tcpSocket:
               port: 18080

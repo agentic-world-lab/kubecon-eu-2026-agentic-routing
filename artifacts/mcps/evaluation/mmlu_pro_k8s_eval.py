@@ -28,7 +28,7 @@ ANSWER_PATTERN = re.compile(
     r"(?:answer(?:\sis)?:?\s*)(A|B|C|D|E|F|G|H|I|J)", re.IGNORECASE
 )
 TIMEOUT_SECONDS = 120
-MAX_RETRIES = 1  # No retries
+MAX_RETRIES = 2  # Increased for reliability
 
 
 def parse_args():
@@ -176,26 +176,66 @@ def extract_answer(response: str) -> Optional[str]:
 
 
 def call_model_with_retry(
-    client: OpenAI, model: str, prompt: str, max_tokens: int, temperature: float
+    client: OpenAI, model: str, prompt: str, max_completion_tokens: int, temperature: float
 ) -> Tuple[str, int, bool]:
     """Call the model with retry logic for handling timeouts and errors."""
     for attempt in range(MAX_RETRIES):
-        try:
-            response = client.chat.completions.create(
-                model=model,
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=max_tokens,
-                temperature=temperature,
-            )
-            content = response.choices[0].message.content or ""
-            completion_tokens = response.usage.completion_tokens if response.usage else 0
-            return content, completion_tokens, True
-        except Exception as e:
-            log(f"[ERROR] API call failed (attempt {attempt+1}/{MAX_RETRIES}): {e}")
-            if attempt < MAX_RETRIES - 1:
-                time.sleep(2**attempt)
-            else:
-                return "ERROR", 0, False
+        # We try different parameter combinations to handle model-specific restrictions
+        # (e.g. o1/o3 reasoning models that reject temperature=0 or max_tokens)
+        strategies = [
+            {"max_completion_tokens": max_completion_tokens, "temperature": temperature},
+            {
+                "max_completion_tokens": max_completion_tokens
+            },  # o1/o3 often prefer no temp or temp=1
+            {"max_tokens": max_completion_tokens, "temperature": temperature},
+            {"max_tokens": max_completion_tokens},
+        ]
+
+        last_error = None
+        for strategy in strategies:
+            params = {
+                "model": model,
+                "messages": [{"role": "user", "content": prompt}],
+                **strategy,
+            }
+            try:
+                response = client.chat.completions.create(**params)
+
+                if not response.choices or len(response.choices) == 0:
+                    log(f"[WARNING] API returned empty choices for model {model}")
+                    return "", 0, False
+
+                content = response.choices[0].message.content or ""
+                completion_tokens = (
+                    response.usage.completion_tokens if response.usage else 0
+                )
+                return content, completion_tokens, True
+            except Exception as e:
+                err_msg = str(e).lower()
+                last_error = e
+                # Fallback on parameter errors
+                if any(
+                    k in err_msg
+                    for k in [
+                        "unsupported_parameter",
+                        "invalid_request_error",
+                        "max_completion_tokens",
+                        "max_tokens",
+                        "temperature",
+                    ]
+                ):
+                    continue
+                else:
+                    # Non-parameter error (timeout, auth), try next strategy anyway in this attempt
+                    continue
+
+        log(
+            f"[ERROR] API call failed (attempt {attempt+1}/{MAX_RETRIES}) for model {model}: {last_error}"
+        )
+        if attempt < MAX_RETRIES - 1:
+            time.sleep(2**attempt)
+
+    return "ERROR", 0, False
 
 
 def process_question(
@@ -203,7 +243,7 @@ def process_question(
     model: str,
     question_data: Dict[str, Any],
     use_cot: bool,
-    max_tokens: int,
+    max_completion_tokens: int,
     temperature: float,
 ) -> Dict[str, Any]:
     """Process a single question and return the results."""
@@ -215,7 +255,7 @@ def process_question(
 
     start_time = time.time()
     response_text, completion_tokens, success = call_model_with_retry(
-        client, model, prompt, max_tokens, temperature
+        client, model, prompt, max_completion_tokens, temperature
     )
     end_time = time.time()
     duration = end_time - start_time
@@ -239,7 +279,7 @@ def evaluate_model(
     api_key: str,
     use_cot: bool,
     concurrent_requests: int,
-    max_tokens: int,
+    max_completion_tokens: int,
     temperature: float,
 ) -> pd.DataFrame:
     """Evaluate a model on the MMLU-Pro dataset."""
@@ -256,13 +296,14 @@ def evaluate_model(
                 model,
                 question_data,
                 use_cot,
-                max_tokens,
+                max_completion_tokens,
                 temperature,
             )
             futures.append(future)
 
         for future in tqdm(futures, total=len(futures), desc=f"Evaluating {model}", file=sys.stderr):
             result = future.result()
+            log(f"[INFO] Result for {model}: correct={result.get('is_correct')}, category={result.get('category')}")
             results.append(result)
 
     return pd.DataFrame(results)
@@ -332,7 +373,7 @@ def main():
         api_key=args.api_key,
         use_cot=args.use_cot,
         concurrent_requests=args.concurrent_requests,
-        max_tokens=args.max_tokens,
+        max_completion_tokens=args.max_tokens,
         temperature=args.temperature,
     )
 

@@ -17,8 +17,8 @@ def create_fn(spec, name, namespace, logger, **kwargs):
     
     if not endpoint:
         if deployment == "remote":
-            # Default to the agentgateway-proxy if remote and no endpoint provided
-            endpoint = "http://agentgateway-proxy.agentgateway-system.svc.cluster.local"
+            # Default to direct OpenAI if remote and no endpoint provided
+            endpoint = "https://api.openai.com/v1"
             logger.info(f"Using default gateway endpoint for remote deployment: {endpoint}")
         else:
             logger.error(f"Cannot process {name}: Missing 'endpoint' in spec for local deployment")
@@ -51,7 +51,8 @@ def update_fn(spec, old, new, name, namespace, logger, **kwargs):
         return
 
     if not endpoint and deployment == "remote":
-        endpoint = "http://agentgateway-proxy.agentgateway-system.svc.cluster.local"
+        # Default to direct OpenAI
+        endpoint = "https://api.openai.com/v1"
         
     try:
         reconcile_backend_manifests(model=model, endpoint=endpoint, deployment=deployment, namespace=namespace)
