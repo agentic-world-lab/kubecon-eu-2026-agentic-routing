@@ -27,7 +27,7 @@ The routing decision is proven two ways:
 1. **Response `model` field** — OpenAI echoes back the actual model used, confirming which backend served the request.
 2. **Router logs** — `[ext_proc] domain=finance selected_model=gpt-4.1` shows the intelligent router classified the prompt and injected the routing header.
 
-> **Building the router image**: see [intelligent-router/README.md](intelligent-router/README.md).
+> **Building the router image**: see [artifacts/intelligent-router/README.md](artifacts/intelligent-router/README.md).
 > The lab uses the pre-built image `antonioberben/intelligent-router:latest`.
 
 ## Prerequisites
@@ -106,13 +106,12 @@ kubectl create secret generic openai-secret \
   --namespace agentgateway-system
 
 kubectl create secret generic openai-secret \
-  --from-literal="OPENAI_API_KEY=Bearer $OPENAI_API_KEY" \
+  --from-literal="OPENAI_API_KEY=$OPENAI_API_KEY" \
   --namespace kagent
 
 kubectl create secret generic openai-secret \
-  --from-literal="OPENAI_API_KEY=Bearer $OPENAI_API_KEY" \
+  --from-literal="OPENAI_API_KEY=$OPENAI_API_KEY" \
   --namespace intelligent-router-system
-
 ```
 
 ### Step 3b — Store the HuggingFace token
@@ -362,20 +361,43 @@ kubectl patch statefulset intelligent-router -n intelligent-router-system --type
 
 ## Cleanup
 
+The easiest way to tear down the lab is to run the uninstall script:
+
+```bash
+./uninstall.sh
+```
+
+Alternatively, you can remove resources manually:
+
 ```bash
 # Remove lab manifests
-kubectl delete -f manifests/agentgatewaypolicy.yaml
-kubectl delete -f manifests/gateway.yaml
-kubectl delete -f intelligent-router/manifests/statefulset.yaml
-kubectl delete -f manifests/intelligent-router-service.yaml
-kubectl delete -f manifests/intelligent-router-config-cr.yaml
-kubectl delete -f intelligent-router/manifests/rbac.yaml
-kubectl delete -f manifests/crd-intelligent-router-config.yaml
-kubectl delete -f manifests/namespace.yaml
+kubectl delete -f manifests/observability/grafana.yaml
+kubectl delete -f manifests/observability/otel-collector.yaml
+kubectl delete -f manifests/observability/prometheus.yaml
+kubectl delete -f manifests/observability/namespace.yaml
+kubectl delete -f manifests/intelligent-router/statefulset.yaml
+kubectl delete -f manifests/intelligent-router/service.yaml
+kubectl delete -f manifests/intelligent-router/rbac.yaml
+kubectl delete -f manifests/intelligent-router/namespace.yaml
+kubectl delete -f manifests/model-agentic-controller/crd-agentic-controller.yaml
+kubectl delete -f manifests/agents/sp-electricity-cost-agent.yaml
+kubectl delete -f manifests/agents/model-cost-agent.yaml
+kubectl delete -f manifests/agents/eval-job-agent.yaml
+kubectl delete -f manifests/agents/orchestrator-rbac.yaml
+kubectl delete -f manifests/agents/orchestrator-agent.yaml
+kubectl delete -f manifests/agents/k8s-agent.yaml
+kubectl delete -f manifests/mcps/spain-electricity-cost-mcp.yaml
+kubectl delete -f manifests/mcps/openrouter-pricing-mcp.yaml
+kubectl delete -f manifests/agentgateway/agentgatewaypolicy.yaml
+kubectl delete -f manifests/agentgateway/gateway.yaml
 kubectl delete secret openai-secret -n agentgateway-system
+kubectl delete secret openai-secret -n kagent
+kubectl delete secret openai-secret -n intelligent-router-system
+kubectl delete secret huggingface-api-key -n intelligent-router-system
 
 # Uninstall AgentGateway
-helm uninstall agentgateway agentgateway-crds -n agentgateway-system
+helm uninstall agentgateway -n agentgateway-system
+helm uninstall agentgateway-crds -n agentgateway-system
 ```
 
 ---
