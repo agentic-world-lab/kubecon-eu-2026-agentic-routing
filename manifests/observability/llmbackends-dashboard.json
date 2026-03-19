@@ -1,0 +1,504 @@
+{
+    "__inputs": [
+        {
+            "name": "DS_PROMETHEUS",
+            "label": "Prometheus",
+            "description": "",
+            "type": "datasource",
+            "pluginId": "prometheus",
+            "pluginName": "Prometheus"
+        }
+    ],
+    "__elements": {},
+    "__requires": [
+        {
+            "type": "panel",
+            "id": "bargauge",
+            "name": "Bar gauge",
+            "version": ""
+        },
+        {
+            "type": "grafana",
+            "id": "grafana",
+            "name": "Grafana",
+            "version": "11.3.0"
+        },
+        {
+            "type": "datasource",
+            "id": "prometheus",
+            "name": "Prometheus",
+            "version": "1.0.0"
+        },
+        {
+            "type": "panel",
+            "id": "stat",
+            "name": "Stat",
+            "version": ""
+        }
+    ],
+    "annotations": {
+        "list": [
+            {
+                "builtIn": 1,
+                "datasource": {
+                    "type": "grafana",
+                    "uid": "-- Grafana --"
+                },
+                "enable": true,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "name": "Annotations & Alerts",
+                "type": "dashboard"
+            }
+        ]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 0,
+    "id": null,
+    "links": [],
+    "panels": [
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "decimals": 0,
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 0,
+                "y": 0
+            },
+            "id": 6,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+            },
+            "pluginVersion": "11.3.0",
+            "targets": [
+                {
+                    "editorMode": "code",
+                    "expr": "increase(agentgateway_requests_total{backend=\"agentgateway-system/gpt-4-1\", status=\"200\"}[$__range])",
+                    "legendFormat": "__auto",
+                    "range": true,
+                    "refId": "A",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${DS_PROMETHEUS}"
+                    }
+                }
+            ],
+            "title": "gpt-4-1",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "decimals": 0,
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 8,
+                "y": 0
+            },
+            "id": 3,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+            },
+            "pluginVersion": "11.3.0",
+            "targets": [
+                {
+                    "disableTextWrap": false,
+                    "editorMode": "code",
+                    "expr": "increase(agentgateway_requests_total{backend=\"agentgateway-system/gpt-4-1-mini\", status=\"200\"}[$__range])",
+                    "fullMetaSearch": false,
+                    "includeNullMetadata": true,
+                    "legendFormat": "__auto",
+                    "range": true,
+                    "refId": "A",
+                    "useBackend": false,
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${DS_PROMETHEUS}"
+                    }
+                }
+            ],
+            "title": "gpt-4-1-mini",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "decimals": 0,
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 16,
+                "y": 0
+            },
+            "id": 4,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+            },
+            "pluginVersion": "11.3.0",
+            "targets": [
+                {
+                    "disableTextWrap": false,
+                    "editorMode": "code",
+                    "exemplar": false,
+                    "expr": "increase(agentgateway_requests_total{backend=\"agentgateway-system/gpt-3-5-turbo\", status=\"200\"}[$__range])",
+                    "fullMetaSearch": false,
+                    "includeNullMetadata": true,
+                    "instant": false,
+                    "legendFormat": "__auto",
+                    "range": true,
+                    "refId": "A",
+                    "useBackend": false,
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${DS_PROMETHEUS}"
+                    }
+                }
+            ],
+            "title": "gpt-3-5-turbo",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "decimals": 0,
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 8
+            },
+            "id": 1,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+            },
+            "pluginVersion": "11.3.0",
+            "targets": [
+                {
+                    "disableTextWrap": false,
+                    "editorMode": "code",
+                    "expr": "increase(agentgateway_requests_total{backend=\"agentgateway-system/gpt-5-mini\", status=\"200\"}[$__range])",
+                    "fullMetaSearch": false,
+                    "includeNullMetadata": true,
+                    "legendFormat": "__auto",
+                    "range": true,
+                    "refId": "A",
+                    "useBackend": false,
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${DS_PROMETHEUS}"
+                    }
+                }
+            ],
+            "title": "gpt-5-mini",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "decimals": 0,
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 8
+            },
+            "id": 2,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+            },
+            "pluginVersion": "11.3.0",
+            "targets": [
+                {
+                    "disableTextWrap": false,
+                    "editorMode": "code",
+                    "expr": "increase(agentgateway_requests_total{backend=\"agentgateway-system/gpt-oss-120b\", status=\"200\"}[$__range])",
+                    "fullMetaSearch": false,
+                    "includeNullMetadata": true,
+                    "legendFormat": "__auto",
+                    "range": true,
+                    "refId": "A",
+                    "useBackend": false,
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${DS_PROMETHEUS}"
+                    }
+                }
+            ],
+            "title": "gpt-oss-120b",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "decimals": 0,
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 9,
+                "w": 24,
+                "x": 0,
+                "y": 16
+            },
+            "id": 5,
+            "options": {
+                "displayMode": "gradient",
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": false
+                },
+                "maxVizHeight": 300,
+                "minVizHeight": 16,
+                "minVizWidth": 8,
+                "namePlacement": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "showUnfilled": true,
+                "sizing": "auto",
+                "valueMode": "color"
+            },
+            "pluginVersion": "11.3.0",
+            "targets": [
+                {
+                    "disableTextWrap": false,
+                    "editorMode": "code",
+                    "expr": "sum by(domain) (increase(intelligent_router_decisions_total[$__range]))",
+                    "fullMetaSearch": false,
+                    "includeNullMetadata": true,
+                    "legendFormat": "{{domain}}",
+                    "range": true,
+                    "refId": "A",
+                    "useBackend": false,
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${DS_PROMETHEUS}"
+                    }
+                }
+            ],
+            "title": "Domain queries",
+            "type": "bargauge"
+        }
+    ],
+    "schemaVersion": 40,
+    "tags": [],
+    "templating": {
+        "list": []
+    },
+    "time": {
+        "from": "now-6h",
+        "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "browser",
+    "title": "Backends",
+    "uid": "cfg16vmbbi1ogc",
+    "version": 21,
+    "weekStart": ""
+}

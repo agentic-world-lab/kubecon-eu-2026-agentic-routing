@@ -47,6 +47,15 @@ kubectl version --client && helm version --short && jq --version
 
 ## Steps
 
+> And yes, you can install the whole application by running:
+```bash
+export OPENAI_API_KEY="sk-…"
+export HF_TOKEN="hf_…" 
+curl -sL https://raw.githubusercontent.com/agentic-world-lab/kubecon-eu-2026-agentic-routing/main/install.sh | bash
+```
+
+If you want to go step by step, you can follow the guide below:
+
 ### Step 1 — Verify cluster access
 
 Ensure your Kubernetes cluster is running and accessible:
@@ -153,46 +162,67 @@ kubectl wait --for=condition=ready mcpservers.kagent.dev -n kagent spain-electri
 ```bash
 kubectl apply -f manifests/agents/k8s-agent.yaml
 kubectl apply -f manifests/agents/orchestrator-agent.yaml
+kubectl apply -f manifests/agents/eval-job-agent.yaml
 kubectl apply -f manifests/agents/model-cost-agent.yaml
 kubectl apply -f manifests/agents/sp-electricity-cost-agent.yaml
-kubectl apply -f manifests/agents/sr-llm-backends.yaml 
 ```
 
-#### Step 6 — Deploy the llmbackend Watcher
+## Step 6 — Install the Backend Evaluation Operator
 
 ```bash
-kubectl apply -f manifests/agent-watcher/
+kubectl apply -f manifests/model-agentic-controller/crd-agentic-controller.yaml
 ```
 
-## Step 7 — Install the Backend Evaluation Operator
-
-```bash
-kubectl apply -f manifests/model-agentic-controller/install.yaml
-```
-
-## Step 8 — Deploy the Intelligent Router
+## Step 7 — Deploy the Intelligent Router
 
 ```bash
 # Intelligent-router CRD, RBAC, CR config, and workload
-kubectl apply -f manifests/namespace.yaml
-kubectl apply -f manifests/intelligent-router/crd-intelligent-router-config.yaml
+kubectl apply -f manifests/intelligent-router/namespace.yaml
 kubectl apply -f manifests/intelligent-router/rbac.yaml
 kubectl apply -f manifests/intelligent-router/service.yaml
 kubectl apply -f manifests/intelligent-router/statefulset.yaml
-
 ```
 
+## Step 8 — Deploy monitoring (Prometheus + Grafana + OTel Collector)
+
+Deploy the observability stack to scrape metrics from AgentGateway and the Intelligent Router:
+
+```bash
+kubectl apply -f manifests/observability/namespace.yaml
+kubectl apply -f manifests/observability/prometheus.yaml
+kubectl apply -f manifests/observability/otel-collector.yaml
+kubectl apply -f manifests/observability/grafana.yaml
+```
+
+Wait for the monitoring pods to be ready:
+```bash
+kubectl rollout status deployment/prometheus -n monitoring --timeout=60s
+kubectl rollout status deployment/otel-collector -n monitoring --timeout=60s
+kubectl rollout status deployment/grafana -n monitoring --timeout=60s
+```
+
+Access Grafana:
+```bash
+kubectl port-forward svc/grafana -n monitoring 3000:3000 &
+```
+Open http://localhost:3000 (login: admin / admin). Two dashboards are pre-loaded in the **AgentGateway** folder:
+- **AgentGateway Dashboard** — overview, tokens, latency, error rates, infrastructure
+- **Latency, Requests & Day 2 Health** — P50/P95/P99, SLI, runtime, rate limiting
 
 ## Step 9 — Create a llmbackend
 ```bash
-kubectl apply -f manifests/llmbackend/gpt-4.1-public.yaml
 kubectl apply -f manifests/llmbackend/gpt-3.5-turbo-public.yaml
+kubectl apply -f manifests/llmbackend/gpt-4.1-mini-public.yaml
+kubectl apply -f manifests/llmbackend/gpt-4.1-public.yaml
+kubectl apply -f manifests/llmbackend/gpt-5-mini-public.yaml
 kubectl apply -f manifests/llmbackend/gpt-oss-120b-local.yaml
 ```
 
 ```bash
 watch bash -c 'oc logs -n default -l app.kubernetes.io/component=evaluator && oc get llmbackends.edgecloudlabs.edgecloudlabs.com -n default'
 ```
+
+## Step 10 — Test the intelligent routing
 
 ```bash
 export INGRESS_GW_ADDRESS=$(kubectl get svc -n agentgateway-system agentgateway-proxy -o jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")

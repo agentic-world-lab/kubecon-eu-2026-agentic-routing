@@ -149,7 +149,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -199,7 +199,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "expr": "sum(increase(agentgateway_requests_total{namespace=~\"$namespace\"}[$__range]))",
               "format": "time_series",
@@ -214,7 +214,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -264,7 +264,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "expr": "sum(increase(agentgateway_gen_ai_client_token_usage_sum{namespace=~\"$namespace\", gen_ai_token_type=\"input\"}[$__range]))",
               "format": "time_series",
@@ -279,7 +279,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -329,7 +329,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "expr": "sum(increase(agentgateway_gen_ai_client_token_usage_sum{namespace=~\"$namespace\", gen_ai_token_type=\"output\"}[$__range]))",
               "format": "time_series",
@@ -344,7 +344,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -402,7 +402,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "histogram_quantile(0.50, sum(rate(agentgateway_request_duration_seconds_bucket{namespace=~\"$namespace\"}[$__rate_interval])) by (le))",
@@ -417,7 +417,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -475,7 +475,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "histogram_quantile(0.90, sum(rate(agentgateway_request_duration_seconds_bucket{namespace=~\"$namespace\"}[$__rate_interval])) by (le))",
@@ -490,7 +490,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -548,7 +548,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "expr": "histogram_quantile(0.95, sum(rate(agentgateway_request_duration_seconds_bucket{namespace=~\"$namespace\"}[$__rate_interval])) by (le))",
               "legendFormat": "",
@@ -561,7 +561,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -611,7 +611,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "expr": "sum(rate(agentgateway_requests_total{namespace=~\"$namespace\"}[$__rate_interval]))",
               "legendFormat": "",
@@ -624,7 +624,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -674,7 +674,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "sum(rate(agentgateway_gen_ai_client_token_usage_sum{namespace=~\"$namespace\", gen_ai_token_type=\"input\"}[$__rate_interval]))",
@@ -689,7 +689,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -739,7 +739,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "sum(rate(agentgateway_gen_ai_client_token_usage_sum{namespace=~\"$namespace\", gen_ai_token_type=\"output\"}[$__rate_interval]))",
@@ -754,7 +754,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -812,7 +812,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "sum(increase(agentgateway_requests_total{namespace=~\"$namespace\", status=~\"401\"}[$__range])) / sum(increase(agentgateway_requests_total{namespace=~\"$namespace\"}[$__range])) or vector(0)",
@@ -828,7 +828,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -886,7 +886,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "sum(increase(agentgateway_requests_total{namespace=~\"$namespace\", status=~\"429\"}[$__range])) / sum(increase(agentgateway_requests_total{namespace=~\"$namespace\"}[$__range])) or vector(0)",
@@ -902,7 +902,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -960,7 +960,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "sum(increase(agentgateway_requests_total{namespace=~\"$namespace\", status=~\"5..\"}[$__range])) / sum(increase(agentgateway_requests_total{namespace=~\"$namespace\"}[$__range])) or vector(0)",
@@ -976,7 +976,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -1035,7 +1035,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "expr": "sum(rate(agentgateway_gen_ai_client_token_usage_sum{namespace=~\"$namespace\", gen_ai_token_type=\"input\"}[$__rate_interval])) / sum(rate(agentgateway_gen_ai_server_request_duration_count{namespace=~\"$namespace\"}[$__rate_interval]))",
               "legendFormat": "",
@@ -1048,7 +1048,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -1107,7 +1107,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "sum(rate(agentgateway_gen_ai_client_token_usage_sum{namespace=~\"$namespace\", gen_ai_token_type=\"output\"}[$__rate_interval])) / sum(rate(agentgateway_gen_ai_server_request_duration_count{namespace=~\"$namespace\"}[$__rate_interval]))",
@@ -1122,7 +1122,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -1172,7 +1172,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "sum(rate(agentgateway_response_bytes_total{namespace=~\"$namespace\"}[$__rate_interval])) / sum(rate(agentgateway_requests_total{namespace=~\"$namespace\"}[$__rate_interval])) or vector(0)",
@@ -1187,7 +1187,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -1357,7 +1357,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "expr": "sum(increase(agentgateway_gen_ai_client_token_usage_sum{namespace=~\"$namespace\", gen_ai_token_type=\"input\"}[$__range])) by (gen_ai_response_model)",
               "format": "table",
@@ -1368,7 +1368,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "expr": "sum(increase(agentgateway_gen_ai_client_token_usage_sum{namespace=~\"$namespace\", gen_ai_token_type=\"output\"}[$__range])) by (gen_ai_response_model)",
               "format": "table",
@@ -1379,7 +1379,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "expr": "sum(increase(agentgateway_gen_ai_server_request_duration_count{namespace=~\"$namespace\"}[$__range])) by (gen_ai_response_model)",
               "format": "table",
@@ -1390,7 +1390,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "expr": "histogram_quantile(0.50, sum(rate(agentgateway_gen_ai_server_request_duration_bucket{namespace=~\"$namespace\"}[$__range])) by (le, gen_ai_response_model))",
               "format": "table",
@@ -1401,7 +1401,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "expr": "histogram_quantile(0.95, sum(rate(agentgateway_gen_ai_server_request_duration_bucket{namespace=~\"$namespace\"}[$__range])) by (le, gen_ai_response_model))",
               "format": "table",
@@ -1468,7 +1468,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -1518,7 +1518,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "expr": "sum(rate(agentgateway_downstream_connections_total{namespace=~\"$namespace\"}[$__rate_interval]))",
               "legendFormat": "",
@@ -1531,7 +1531,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -1581,7 +1581,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "expr": "sum(agentgateway_tokio_num_alive_tasks{namespace=~\"$namespace\"})",
               "legendFormat": "",
@@ -1594,7 +1594,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -1644,7 +1644,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "sum(increase(agentgateway_mcp_requests_total{namespace=~\"$namespace\"}[$__rate_interval])) or vector(0)",
@@ -1672,7 +1672,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -1722,7 +1722,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "sum(kube_deployment_status_replicas{namespace=~\"$namespace\", deployment=~\".*agentgateway.*\", deployment!~\".*(enterprise-agentgateway|ext-auth|ext-cache|rate-limiter).*\"})",
@@ -1737,7 +1737,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -1787,7 +1787,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*agentgateway.*\", deployment!~\".*(enterprise-agentgateway|ext-auth|ext-cache|rate-limiter).*\"})",
@@ -1802,7 +1802,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -1860,7 +1860,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "sum(kube_pod_container_status_restarts_total{namespace=~\"$namespace\", pod=~\".*agentgateway-.*\", pod!~\".*(enterprise-agentgateway|ext-auth|ext-cache|rate-limiter).*\"})",
@@ -1875,7 +1875,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -1934,7 +1934,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max(kube_pod_container_resource_requests{namespace=~\"$namespace\", pod=~\"agentgateway-.*\", resource=\"cpu\"})",
@@ -1949,7 +1949,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -1999,7 +1999,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max(kube_pod_container_resource_requests{namespace=~\"$namespace\", pod=~\"agentgateway-.*\", resource=\"memory\"})",
@@ -2014,7 +2014,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -2097,7 +2097,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=~\"$namespace\", pod=~\"agentgateway-.*\", cpu=\"total\"}[$__rate_interval])) by (pod)",
               "legendFormat": "{{pod}}",
@@ -2110,7 +2110,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -2193,7 +2193,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "expr": "sum(container_memory_working_set_bytes{namespace=~\"$namespace\", pod=~\"agentgateway-.*\"}) by (pod)",
               "legendFormat": "{{pod}}",
@@ -2206,7 +2206,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -2297,7 +2297,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=~\"$namespace\", pod=~\"agentgateway-.*\", cpu=\"total\"}[$__rate_interval])) by (pod)\n/\nsum(kube_pod_container_resource_requests{namespace=~\"$namespace\", pod=~\"agentgateway-.*\", resource=\"cpu\"}) by (pod)\n* 100",
@@ -2312,7 +2312,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -2403,7 +2403,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "sum(container_memory_working_set_bytes{namespace=~\"$namespace\", pod=~\"agentgateway-.*\"}) by (pod)\n/\nsum(kube_pod_container_resource_requests{namespace=~\"$namespace\", pod=~\"agentgateway-.*\", resource=\"memory\"}) by (pod)\n* 100",
@@ -2418,7 +2418,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -2468,7 +2468,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "sum(kube_deployment_status_replicas{namespace=~\"$namespace\", deployment=\"enterprise-agentgateway\"})",
@@ -2483,7 +2483,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -2533,7 +2533,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=\"enterprise-agentgateway\"})",
@@ -2548,7 +2548,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -2606,7 +2606,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "sum(kube_pod_container_status_restarts_total{namespace=~\"$namespace\", pod=~\"enterprise-agentgateway-.*\"})",
@@ -2621,7 +2621,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -2704,7 +2704,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=~\"$namespace\", pod=~\"enterprise-agentgateway-.*\", cpu=\"total\"}[$__rate_interval])) by (pod)",
@@ -2719,7 +2719,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -2802,7 +2802,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "sum(container_memory_working_set_bytes{namespace=~\"$namespace\", pod=~\"enterprise-agentgateway-.*\"}) by (pod)",
@@ -2830,7 +2830,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -2885,7 +2885,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "expr": "sum(increase(agentgateway_gen_ai_server_request_duration_count{namespace=~\"$namespace\"}[$__range])) by (gen_ai_response_model)",
               "format": "time_series",
@@ -2900,7 +2900,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -2982,7 +2982,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "sum(increase(agentgateway_gen_ai_server_request_duration_count{namespace=~\"$namespace\"}[$__range]))\nby (gen_ai_response_model)",
@@ -2997,7 +2997,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -3079,7 +3079,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "expr": "sum(increase(agentgateway_gen_ai_client_token_usage_sum{namespace=~\"$namespace\"}[$__range])) by (gen_ai_token_type)",
               "legendFormat": "{{gen_ai_token_type}}",
@@ -3092,7 +3092,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -3175,7 +3175,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "sum(rate(agentgateway_gen_ai_server_request_duration_count{namespace=~\"$namespace\"}[$__rate_interval])) by (gen_ai_response_model)",
@@ -3190,7 +3190,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -3280,7 +3280,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "expr": "topk(10, sum(increase(agentgateway_requests_total{namespace=~\"$namespace\"}[$__range])) by (route, method))",
               "format": "table",
@@ -3291,7 +3291,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "expr": "topk(10, histogram_quantile(0.95, sum(rate(agentgateway_request_duration_seconds_bucket{namespace=~\"$namespace\"}[$__range])) by (le, route, method)))",
               "format": "table",
@@ -3302,7 +3302,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "expr": "topk(10, sum(increase(agentgateway_response_bytes_total{namespace=~\"$namespace\"}[$__range])) by (route, method))",
               "format": "table",
@@ -3346,7 +3346,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -3429,7 +3429,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "expr": "histogram_quantile(0.50, sum(rate(agentgateway_gen_ai_server_request_duration_bucket{namespace=~\"$namespace\"}[$__rate_interval])) by (le))",
               "legendFormat": "p50 Request Duration",
@@ -3438,7 +3438,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "expr": "histogram_quantile(0.95, sum(rate(agentgateway_gen_ai_server_request_duration_bucket{namespace=~\"$namespace\"}[$__rate_interval])) by (le))",
               "legendFormat": "p95 Request Duration",
@@ -3447,7 +3447,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "expr": "histogram_quantile(0.99, sum(rate(agentgateway_gen_ai_server_request_duration_bucket{namespace=~\"$namespace\"}[$__rate_interval])) by (le))",
               "legendFormat": "p99 Request Duration",
@@ -3460,7 +3460,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -3543,7 +3543,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "expr": "histogram_quantile(0.95, sum(rate(agentgateway_gen_ai_server_request_duration_bucket{namespace=~\"$namespace\"}[$__rate_interval])) by (le, gen_ai_response_model))",
               "legendFormat": "{{gen_ai_response_model}}",
@@ -3556,7 +3556,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -3638,7 +3638,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "expr": "sum(rate(agentgateway_requests_total{namespace=~\"$namespace\"}[$__rate_interval])) by (status)",
               "legendFormat": "{{status}}",
@@ -3651,7 +3651,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -3733,7 +3733,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "expr": "sum(rate(agentgateway_response_bytes_total{namespace=~\"$namespace\"}[$__rate_interval])) by (route)",
               "legendFormat": "{{route}}",
@@ -3746,7 +3746,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -3828,7 +3828,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "sum(rate(agentgateway_response_bytes_total{namespace=~\"$namespace\"}[$__rate_interval])) / sum(rate(agentgateway_requests_total{namespace=~\"$namespace\"}[$__rate_interval]))",
@@ -3843,7 +3843,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "Prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -3925,7 +3925,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "expr": "sum(rate(agentgateway_response_bytes_total{namespace=~\"$namespace\"}[$__rate_interval])) by (backend)",
               "legendFormat": "{{backend}}",
@@ -3948,7 +3948,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "fieldConfig": {
                 "defaults": {
@@ -4031,7 +4031,7 @@ data:
                 {
                   "datasource": {
                     "type": "prometheus",
-                    "uid": "prometheus"
+                    "uid": "Prometheus"
                   },
                   "expr": "sum(increase(agentgateway_gen_ai_server_request_duration_count{namespace=~\"$namespace\"}[$__rate_interval])) by (user_org)",
                   "legendFormat": "{{user_org}}",
@@ -4044,7 +4044,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "fieldConfig": {
                 "defaults": {
@@ -4127,7 +4127,7 @@ data:
                 {
                   "datasource": {
                     "type": "prometheus",
-                    "uid": "prometheus"
+                    "uid": "Prometheus"
                   },
                   "expr": "sum(increase(agentgateway_gen_ai_server_request_duration_count{namespace=~\"$namespace\"}[$__rate_interval])) by (user_team)",
                   "legendFormat": "{{user_team}}",
@@ -4140,7 +4140,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "fieldConfig": {
                 "defaults": {
@@ -4223,7 +4223,7 @@ data:
                 {
                   "datasource": {
                     "type": "prometheus",
-                    "uid": "prometheus"
+                    "uid": "Prometheus"
                   },
                   "expr": "sum(increase(agentgateway_gen_ai_client_token_usage_sum{namespace=~\"$namespace\"}[$__rate_interval])) by (user_org, gen_ai_token_type)",
                   "legendFormat": "{{user_org}} - {{gen_ai_token_type}}",
@@ -4236,7 +4236,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "fieldConfig": {
                 "defaults": {
@@ -4319,7 +4319,7 @@ data:
                 {
                   "datasource": {
                     "type": "prometheus",
-                    "uid": "prometheus"
+                    "uid": "Prometheus"
                   },
                   "expr": "sum(increase(agentgateway_gen_ai_client_token_usage_sum{namespace=~\"$namespace\"}[$__rate_interval])) by (user_team, gen_ai_token_type)",
                   "legendFormat": "{{user_team}} - {{gen_ai_token_type}}",
@@ -4346,7 +4346,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "fieldConfig": {
                 "defaults": {
@@ -4428,7 +4428,7 @@ data:
                 {
                   "datasource": {
                     "type": "prometheus",
-                    "uid": "prometheus"
+                    "uid": "Prometheus"
                   },
                   "expr": "sum(increase(agentgateway_mcp_requests_total{namespace=~\"$namespace\"}[$__rate_interval])) by (tool)",
                   "legendFormat": "{{tool}}",
@@ -4441,7 +4441,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "fieldConfig": {
                 "defaults": {
@@ -4523,7 +4523,7 @@ data:
                 {
                   "datasource": {
                     "type": "prometheus",
-                    "uid": "prometheus"
+                    "uid": "Prometheus"
                   },
                   "expr": "sum(increase(agentgateway_mcp_requests_total{namespace=~\"$namespace\"}[$__rate_interval])) by (server)",
                   "legendFormat": "{{server}}",
@@ -4550,7 +4550,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "fieldConfig": {
                 "defaults": {
@@ -4633,7 +4633,7 @@ data:
                 {
                   "datasource": {
                     "type": "prometheus",
-                    "uid": "prometheus"
+                    "uid": "Prometheus"
                   },
                   "expr": "histogram_quantile(0.50, sum(rate(agentgateway_gen_ai_server_time_per_output_token_bucket{namespace=~\"$namespace\"}[$__rate_interval])) by (le))",
                   "legendFormat": "p50 Time per Output Token",
@@ -4642,7 +4642,7 @@ data:
                 {
                   "datasource": {
                     "type": "prometheus",
-                    "uid": "prometheus"
+                    "uid": "Prometheus"
                   },
                   "expr": "histogram_quantile(0.95, sum(rate(agentgateway_gen_ai_server_time_per_output_token_bucket{namespace=~\"$namespace\"}[$__rate_interval])) by (le))",
                   "legendFormat": "p95 Time per Output Token",
@@ -4655,7 +4655,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "fieldConfig": {
                 "defaults": {
@@ -4738,7 +4738,7 @@ data:
                 {
                   "datasource": {
                     "type": "prometheus",
-                    "uid": "prometheus"
+                    "uid": "Prometheus"
                   },
                   "expr": "histogram_quantile(0.50, sum(rate(agentgateway_gen_ai_server_time_to_first_token_bucket{namespace=~\"$namespace\"}[$__rate_interval])) by (le))",
                   "legendFormat": "p50 Time to First Token",
@@ -4747,7 +4747,7 @@ data:
                 {
                   "datasource": {
                     "type": "prometheus",
-                    "uid": "prometheus"
+                    "uid": "Prometheus"
                   },
                   "expr": "histogram_quantile(0.95, sum(rate(agentgateway_gen_ai_server_time_to_first_token_bucket{namespace=~\"$namespace\"}[$__rate_interval])) by (le))",
                   "legendFormat": "p95 Time to First Token",
@@ -4774,7 +4774,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "fieldConfig": {
                 "defaults": {
@@ -4857,7 +4857,7 @@ data:
                 {
                   "datasource": {
                     "type": "prometheus",
-                    "uid": "prometheus"
+                    "uid": "Prometheus"
                   },
                   "expr": "sum(rate(agentgateway_requests_total{namespace=~\"$namespace\"}[$__rate_interval])) by (route)",
                   "legendFormat": "{{route}}",
@@ -4870,7 +4870,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "fieldConfig": {
                 "defaults": {
@@ -4999,7 +4999,7 @@ data:
                 {
                   "datasource": {
                     "type": "prometheus",
-                    "uid": "prometheus"
+                    "uid": "Prometheus"
                   },
                   "expr": "sum(rate(agentgateway_requests_total{namespace=~\"$namespace\"}[$__rate_interval])) by (status)",
                   "legendFormat": "{{status}}",
@@ -5012,7 +5012,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "fieldConfig": {
                 "defaults": {
@@ -5095,7 +5095,7 @@ data:
                 {
                   "datasource": {
                     "type": "prometheus",
-                    "uid": "prometheus"
+                    "uid": "Prometheus"
                   },
                   "expr": "histogram_quantile(0.50, sum(rate(agentgateway_request_duration_seconds_bucket{namespace=~\"$namespace\"}[$__rate_interval])) by (le, route))",
                   "legendFormat": "p50 - {{route}}",
@@ -5104,7 +5104,7 @@ data:
                 {
                   "datasource": {
                     "type": "prometheus",
-                    "uid": "prometheus"
+                    "uid": "Prometheus"
                   },
                   "expr": "histogram_quantile(0.95, sum(rate(agentgateway_request_duration_seconds_bucket{namespace=~\"$namespace\"}[$__rate_interval])) by (le, route))",
                   "legendFormat": "p95 - {{route}}",
@@ -5113,7 +5113,7 @@ data:
                 {
                   "datasource": {
                     "type": "prometheus",
-                    "uid": "prometheus"
+                    "uid": "Prometheus"
                   },
                   "expr": "histogram_quantile(0.99, sum(rate(agentgateway_request_duration_seconds_bucket{namespace=~\"$namespace\"}[$__rate_interval])) by (le, route))",
                   "legendFormat": "p99 - {{route}}",
@@ -5126,7 +5126,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "fieldConfig": {
                 "defaults": {
@@ -5209,7 +5209,7 @@ data:
                 {
                   "datasource": {
                     "type": "prometheus",
-                    "uid": "prometheus"
+                    "uid": "Prometheus"
                   },
                   "expr": "sum(rate(agentgateway_response_bytes_total{namespace=~\"$namespace\"}[$__rate_interval])) by (route)",
                   "legendFormat": "{{route}}",
@@ -5236,7 +5236,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "fieldConfig": {
                 "defaults": {
@@ -5319,7 +5319,7 @@ data:
                 {
                   "datasource": {
                     "type": "prometheus",
-                    "uid": "prometheus"
+                    "uid": "Prometheus"
                   },
                   "expr": "sum(rate(agentgateway_downstream_connections_total{namespace=~\"$namespace\"}[$__rate_interval])) by (protocol)",
                   "legendFormat": "{{protocol}}",
@@ -5332,7 +5332,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "fieldConfig": {
                 "defaults": {
@@ -5415,7 +5415,7 @@ data:
                 {
                   "datasource": {
                     "type": "prometheus",
-                    "uid": "prometheus"
+                    "uid": "Prometheus"
                   },
                   "expr": "histogram_quantile(0.50, sum(rate(agentgateway_upstream_connect_duration_seconds_bucket{namespace=~\"$namespace\"}[$__rate_interval])) by (le, transport))",
                   "legendFormat": "p50 - {{transport}}",
@@ -5424,7 +5424,7 @@ data:
                 {
                   "datasource": {
                     "type": "prometheus",
-                    "uid": "prometheus"
+                    "uid": "Prometheus"
                   },
                   "expr": "histogram_quantile(0.95, sum(rate(agentgateway_upstream_connect_duration_seconds_bucket{namespace=~\"$namespace\"}[$__rate_interval])) by (le, transport))",
                   "legendFormat": "p95 - {{transport}}",
@@ -5437,7 +5437,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "Prometheus"
               },
               "fieldConfig": {
                 "defaults": {
@@ -5520,7 +5520,7 @@ data:
                 {
                   "datasource": {
                     "type": "prometheus",
-                    "uid": "prometheus"
+                    "uid": "Prometheus"
                   },
                   "expr": "agentgateway_tokio_num_alive_tasks{namespace=~\"$namespace\"}",
                   "legendFormat": "Active Tasks",
@@ -5529,7 +5529,7 @@ data:
                 {
                   "datasource": {
                     "type": "prometheus",
-                    "uid": "prometheus"
+                    "uid": "Prometheus"
                   },
                   "expr": "agentgateway_tokio_global_queue_depth{namespace=~\"$namespace\"}",
                   "legendFormat": "Queue Depth",
@@ -5538,7 +5538,7 @@ data:
                 {
                   "datasource": {
                     "type": "prometheus",
-                    "uid": "prometheus"
+                    "uid": "Prometheus"
                   },
                   "expr": "agentgateway_tokio_num_workers{namespace=~\"$namespace\"}",
                   "legendFormat": "Workers",
@@ -5577,7 +5577,7 @@ data:
             "allValue": ".*",
             "datasource": {
               "type": "prometheus",
-              "uid": "prometheus"
+              "uid": "Prometheus"
             },
             "definition": "label_values(agentgateway_build_info, namespace)",
             "includeAll": true,
@@ -7327,5 +7327,510 @@ data:
       "title": "AgentGateway - Latency, Requests & Day 2 Health",
       "uid": "agentgateway-latency-requests-day2",
       "version": 2,
+      "weekStart": ""
+    }
+  llmbackends-dashboard.json: |
+    {
+      "__inputs": [
+          {
+              "name": "DS_PROMETHEUS",
+              "label": "Prometheus",
+              "description": "",
+              "type": "datasource",
+              "pluginId": "prometheus",
+              "pluginName": "Prometheus"
+          }
+      ],
+      "__elements": {},
+      "__requires": [
+          {
+              "type": "panel",
+              "id": "bargauge",
+              "name": "Bar gauge",
+              "version": ""
+          },
+          {
+              "type": "grafana",
+              "id": "grafana",
+              "name": "Grafana",
+              "version": "11.3.0"
+          },
+          {
+              "type": "datasource",
+              "id": "prometheus",
+              "name": "Prometheus",
+              "version": "1.0.0"
+          },
+          {
+              "type": "panel",
+              "id": "stat",
+              "name": "Stat",
+              "version": ""
+          }
+      ],
+      "annotations": {
+          "list": [
+              {
+                  "builtIn": 1,
+                  "datasource": {
+                      "type": "grafana",
+                      "uid": "-- Grafana --"
+                  },
+                  "enable": true,
+                  "hide": true,
+                  "iconColor": "rgba(0, 211, 255, 1)",
+                  "name": "Annotations & Alerts",
+                  "type": "dashboard"
+              }
+          ]
+      },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": null,
+      "links": [],
+      "panels": [
+          {
+              "datasource": {
+                  "type": "prometheus",
+                  "uid": "Prometheus"
+              },
+              "fieldConfig": {
+                  "defaults": {
+                      "color": {
+                          "mode": "thresholds"
+                      },
+                      "decimals": 0,
+                      "mappings": [],
+                      "thresholds": {
+                          "mode": "absolute",
+                          "steps": [
+                              {
+                                  "color": "green",
+                                  "value": null
+                              },
+                              {
+                                  "color": "red",
+                                  "value": 80
+                              }
+                          ]
+                      }
+                  },
+                  "overrides": []
+              },
+              "gridPos": {
+                  "h": 8,
+                  "w": 8,
+                  "x": 0,
+                  "y": 0
+              },
+              "id": 6,
+              "options": {
+                  "colorMode": "value",
+                  "graphMode": "area",
+                  "justifyMode": "auto",
+                  "orientation": "auto",
+                  "percentChangeColorMode": "standard",
+                  "reduceOptions": {
+                      "calcs": [
+                          "lastNotNull"
+                      ],
+                      "fields": "",
+                      "values": false
+                  },
+                  "showPercentChange": false,
+                  "textMode": "auto",
+                  "wideLayout": true
+              },
+              "pluginVersion": "11.3.0",
+              "targets": [
+                  {
+                      "editorMode": "code",
+                      "expr": "increase(agentgateway_requests_total{backend=\"agentgateway-system/gpt-4-1\", status=\"200\"}[$__range])",
+                      "legendFormat": "__auto",
+                      "range": true,
+                      "refId": "A",
+                      "datasource": {
+                          "type": "prometheus",
+                          "uid": "Prometheus"
+                      }
+                  }
+              ],
+              "title": "gpt-4-1",
+              "type": "stat"
+          },
+          {
+              "datasource": {
+                  "type": "prometheus",
+                  "uid": "Prometheus"
+              },
+              "fieldConfig": {
+                  "defaults": {
+                      "color": {
+                          "mode": "thresholds"
+                      },
+                      "decimals": 0,
+                      "mappings": [],
+                      "thresholds": {
+                          "mode": "absolute",
+                          "steps": [
+                              {
+                                  "color": "green",
+                                  "value": null
+                              }
+                          ]
+                      }
+                  },
+                  "overrides": []
+              },
+              "gridPos": {
+                  "h": 8,
+                  "w": 8,
+                  "x": 8,
+                  "y": 0
+              },
+              "id": 3,
+              "options": {
+                  "colorMode": "value",
+                  "graphMode": "area",
+                  "justifyMode": "auto",
+                  "orientation": "auto",
+                  "percentChangeColorMode": "standard",
+                  "reduceOptions": {
+                      "calcs": [
+                          "lastNotNull"
+                      ],
+                      "fields": "",
+                      "values": false
+                  },
+                  "showPercentChange": false,
+                  "textMode": "auto",
+                  "wideLayout": true
+              },
+              "pluginVersion": "11.3.0",
+              "targets": [
+                  {
+                      "disableTextWrap": false,
+                      "editorMode": "code",
+                      "expr": "increase(agentgateway_requests_total{backend=\"agentgateway-system/gpt-4-1-mini\", status=\"200\"}[$__range])",
+                      "fullMetaSearch": false,
+                      "includeNullMetadata": true,
+                      "legendFormat": "__auto",
+                      "range": true,
+                      "refId": "A",
+                      "useBackend": false,
+                      "datasource": {
+                          "type": "prometheus",
+                          "uid": "Prometheus"
+                      }
+                  }
+              ],
+              "title": "gpt-4-1-mini",
+              "type": "stat"
+          },
+          {
+              "datasource": {
+                  "type": "prometheus",
+                  "uid": "Prometheus"
+              },
+              "fieldConfig": {
+                  "defaults": {
+                      "color": {
+                          "mode": "thresholds"
+                      },
+                      "decimals": 0,
+                      "mappings": [],
+                      "thresholds": {
+                          "mode": "absolute",
+                          "steps": [
+                              {
+                                  "color": "green",
+                                  "value": null
+                              }
+                          ]
+                      }
+                  },
+                  "overrides": []
+              },
+              "gridPos": {
+                  "h": 8,
+                  "w": 8,
+                  "x": 16,
+                  "y": 0
+              },
+              "id": 4,
+              "options": {
+                  "colorMode": "value",
+                  "graphMode": "area",
+                  "justifyMode": "auto",
+                  "orientation": "auto",
+                  "percentChangeColorMode": "standard",
+                  "reduceOptions": {
+                      "calcs": [
+                          "lastNotNull"
+                      ],
+                      "fields": "",
+                      "values": false
+                  },
+                  "showPercentChange": false,
+                  "textMode": "auto",
+                  "wideLayout": true
+              },
+              "pluginVersion": "11.3.0",
+              "targets": [
+                  {
+                      "disableTextWrap": false,
+                      "editorMode": "code",
+                      "exemplar": false,
+                      "expr": "increase(agentgateway_requests_total{backend=\"agentgateway-system/gpt-3-5-turbo\", status=\"200\"}[$__range])",
+                      "fullMetaSearch": false,
+                      "includeNullMetadata": true,
+                      "instant": false,
+                      "legendFormat": "__auto",
+                      "range": true,
+                      "refId": "A",
+                      "useBackend": false,
+                      "datasource": {
+                          "type": "prometheus",
+                          "uid": "Prometheus"
+                      }
+                  }
+              ],
+              "title": "gpt-3-5-turbo",
+              "type": "stat"
+          },
+          {
+              "datasource": {
+                  "type": "prometheus",
+                  "uid": "Prometheus"
+              },
+              "fieldConfig": {
+                  "defaults": {
+                      "color": {
+                          "mode": "thresholds"
+                      },
+                      "decimals": 0,
+                      "mappings": [],
+                      "thresholds": {
+                          "mode": "absolute",
+                          "steps": [
+                              {
+                                  "color": "green",
+                                  "value": null
+                              },
+                              {
+                                  "color": "red",
+                                  "value": 80
+                              }
+                          ]
+                      }
+                  },
+                  "overrides": []
+              },
+              "gridPos": {
+                  "h": 8,
+                  "w": 12,
+                  "x": 0,
+                  "y": 8
+              },
+              "id": 1,
+              "options": {
+                  "colorMode": "value",
+                  "graphMode": "area",
+                  "justifyMode": "auto",
+                  "orientation": "auto",
+                  "percentChangeColorMode": "standard",
+                  "reduceOptions": {
+                      "calcs": [
+                          "lastNotNull"
+                      ],
+                      "fields": "",
+                      "values": false
+                  },
+                  "showPercentChange": false,
+                  "textMode": "auto",
+                  "wideLayout": true
+              },
+              "pluginVersion": "11.3.0",
+              "targets": [
+                  {
+                      "disableTextWrap": false,
+                      "editorMode": "code",
+                      "expr": "increase(agentgateway_requests_total{backend=\"agentgateway-system/gpt-5-mini\", status=\"200\"}[$__range])",
+                      "fullMetaSearch": false,
+                      "includeNullMetadata": true,
+                      "legendFormat": "__auto",
+                      "range": true,
+                      "refId": "A",
+                      "useBackend": false,
+                      "datasource": {
+                          "type": "prometheus",
+                          "uid": "Prometheus"
+                      }
+                  }
+              ],
+              "title": "gpt-5-mini",
+              "type": "stat"
+          },
+          {
+              "datasource": {
+                  "type": "prometheus",
+                  "uid": "Prometheus"
+              },
+              "fieldConfig": {
+                  "defaults": {
+                      "color": {
+                          "mode": "thresholds"
+                      },
+                      "decimals": 0,
+                      "mappings": [],
+                      "thresholds": {
+                          "mode": "absolute",
+                          "steps": [
+                              {
+                                  "color": "green",
+                                  "value": null
+                              }
+                          ]
+                      }
+                  },
+                  "overrides": []
+              },
+              "gridPos": {
+                  "h": 8,
+                  "w": 12,
+                  "x": 12,
+                  "y": 8
+              },
+              "id": 2,
+              "options": {
+                  "colorMode": "value",
+                  "graphMode": "area",
+                  "justifyMode": "auto",
+                  "orientation": "auto",
+                  "percentChangeColorMode": "standard",
+                  "reduceOptions": {
+                      "calcs": [
+                          "lastNotNull"
+                      ],
+                      "fields": "",
+                      "values": false
+                  },
+                  "showPercentChange": false,
+                  "textMode": "auto",
+                  "wideLayout": true
+              },
+              "pluginVersion": "11.3.0",
+              "targets": [
+                  {
+                      "disableTextWrap": false,
+                      "editorMode": "code",
+                      "expr": "increase(agentgateway_requests_total{backend=\"agentgateway-system/gpt-oss-120b\", status=\"200\"}[$__range])",
+                      "fullMetaSearch": false,
+                      "includeNullMetadata": true,
+                      "legendFormat": "__auto",
+                      "range": true,
+                      "refId": "A",
+                      "useBackend": false,
+                      "datasource": {
+                          "type": "prometheus",
+                          "uid": "Prometheus"
+                      }
+                  }
+              ],
+              "title": "gpt-oss-120b",
+              "type": "stat"
+          },
+          {
+              "datasource": {
+                  "type": "prometheus",
+                  "uid": "Prometheus"
+              },
+              "fieldConfig": {
+                  "defaults": {
+                      "color": {
+                          "mode": "thresholds"
+                      },
+                      "decimals": 0,
+                      "mappings": [],
+                      "thresholds": {
+                          "mode": "absolute",
+                          "steps": [
+                              {
+                                  "color": "green",
+                                  "value": null
+                              }
+                          ]
+                      }
+                  },
+                  "overrides": []
+              },
+              "gridPos": {
+                  "h": 9,
+                  "w": 24,
+                  "x": 0,
+                  "y": 16
+              },
+              "id": 5,
+              "options": {
+                  "displayMode": "gradient",
+                  "legend": {
+                      "calcs": [],
+                      "displayMode": "list",
+                      "placement": "bottom",
+                      "showLegend": false
+                  },
+                  "maxVizHeight": 300,
+                  "minVizHeight": 16,
+                  "minVizWidth": 8,
+                  "namePlacement": "auto",
+                  "orientation": "auto",
+                  "reduceOptions": {
+                      "calcs": [
+                          "lastNotNull"
+                      ],
+                      "fields": "",
+                      "values": false
+                  },
+                  "showUnfilled": true,
+                  "sizing": "auto",
+                  "valueMode": "color"
+              },
+              "pluginVersion": "11.3.0",
+              "targets": [
+                  {
+                      "disableTextWrap": false,
+                      "editorMode": "code",
+                      "expr": "sum by(domain) (increase(intelligent_router_decisions_total[$__range]))",
+                      "fullMetaSearch": false,
+                      "includeNullMetadata": true,
+                      "legendFormat": "{{domain}}",
+                      "range": true,
+                      "refId": "A",
+                      "useBackend": false,
+                      "datasource": {
+                          "type": "prometheus",
+                          "uid": "Prometheus"
+                      }
+                  }
+              ],
+              "title": "Domain queries",
+              "type": "bargauge"
+          }
+      ],
+      "schemaVersion": 40,
+      "tags": [],
+      "templating": {
+          "list": []
+      },
+      "time": {
+          "from": "now-6h",
+          "to": "now"
+      },
+      "timepicker": {},
+      "timezone": "browser",
+      "title": "Backends",
+      "uid": "cfg16vmbbi1ogc",
+      "version": 21,
       "weekStart": ""
     }

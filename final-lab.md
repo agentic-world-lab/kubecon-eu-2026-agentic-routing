@@ -222,10 +222,10 @@ Deploy all agents — including the orchestrator that evaluates LLMBackend CRs:
 
 ```bash
 kubectl apply -f manifests/agents/k8s-agent.yaml
+kubectl apply -f manifests/agents/orchestrator-agent.yaml
+kubectl apply -f manifests/agents/eval-job-agent.yaml
 kubectl apply -f manifests/agents/model-cost-agent.yaml
 kubectl apply -f manifests/agents/sp-electricity-cost-agent.yaml
-kubectl apply -f manifests/agents/sr-llm-backends.yaml
-kubectl apply -f manifests/agents/orchestrator-agent.yaml
 ```
 
 Verify the orchestrator agent pod is running:
