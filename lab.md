@@ -429,6 +429,62 @@ curl -s http://$INGRESS_GW_ADDRESS/v1/chat/completions \
   }' | jq '{model: .model, content: .choices[0].message.content[:100]}'
 ```
 
+## Step 13 — Running the Demos
+
+You can use the provided Python scripts in the `artifacts/` folder to interactively test and visualize the intelligent router.
+
+### Running the Live Demo Loop (`demo_loop.py`)
+
+This script sends a continuous stream of categorized prompts to the Gateway, showing real-time latency, throughput, cost, and the router's dynamic model selection.
+
+```bash
+cd artifacts/
+./demo_loop.py
+```
+
+**Available Flags:**
+- `--long`: Uses complex, high-token prompts (~500+ tokens) instead of short questions. This is specifically designed to trigger and demonstrate the router's **token budget pressure** mechanism.
+- `--pressure`: Unhides the `PRESSURE` column in the console output, allowing you to monitor the real-time token budget pressure from the router's logs.
+
+**Example: Simulating Budget Pressure**
+```bash
+./demo_loop.py --long --pressure
+```
+
+### Visualizing the Routing Logic (`show_heatmap.py`)
+
+This script connects to the Kubernetes cluster, reads all evaluated `LLMBackend` configurations, and reverse-engineers the intelligent router's scoring algorithm to display a matrix of the top choices for each domain.
+
+```bash
+cd artifacts/
+./show_heatmap.py
+```
+
+**Available Flags:**
+- `--live`: Instead of using static evaluation metrics, this flag queries the intelligent router's internal Prometheus endpoint to fetch the **live** average latency for each model and the live budget pressure. It recalculates the heatmap dynamically, showing exactly why the router is making its current decisions.
+
+```bash
+./show_heatmap.py --live
+```
+
+
+### 🎯 Change to Accuracy (Default)
+
+```bash
+kubectl patch statefulset intelligent-router -n intelligent-router-system --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/env/0/value", "value":"accuracy"}]'
+```
+
+### ⚡ Change to Latency
+
+```bash
+kubectl patch statefulset intelligent-router -n intelligent-router-system --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/env/0/value", "value":"latency"}]'
+```
+### 💰 Change to Cost
+```bash
+kubectl patch statefulset intelligent-router -n intelligent-router-system --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/env/0/value", "value":"cost"}]'
+```
+
+
 ### Verify routing decisions in the router logs
 
 After running the tests, check the intelligent router logs to confirm each classification:
